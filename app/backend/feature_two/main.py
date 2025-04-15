@@ -11,12 +11,18 @@ client = MongoClient(uri) # Create a MongoClient instance to connect to MongoDB 
 
 print(client.list_database_names()) # Print the names of all databases in the MongoDB instance
 
-db = client["UserDb"] # Connect to the "sample_mflix" database
+db = client["sample_mflix"] # Connect to the "sample_mflix" database
 
 print(db.list_collection_names()) # Print the names of all collections in the database
 
-collection = db["users"] # Connect to the "movies" collection in the database
+collection = db["users"] # Connect to the "users" collection in the database
 
-print(collection.find_one)
+post = {
+    '_id': 1,
+    'name': 'Romyojit',
+    "email": "test@gmail.com",
+    "password": "test123"
+}
+print(collection.insert_one(post)) # Print one document from the "users" collection
 
 
