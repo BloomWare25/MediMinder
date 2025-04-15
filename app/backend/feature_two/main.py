@@ -17,6 +17,6 @@ print(db.list_collection_names()) # Print the names of all collections in the da
 
 collection = db["users"] # Connect to the "movies" collection in the database
 
-print(collection.find_one) # Print one document from the collection and its 'fullplot' field
+print(collection.find_one)
 
 
