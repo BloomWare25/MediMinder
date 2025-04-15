@@ -4,7 +4,6 @@
   "description": "Mediminder app for medicaion reminder ",
   "license": "ISC",
   "author": "Debanjan",
-  "type": "commonjs",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -12,6 +11,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "mongoose": "^8.13.2",
     "nodemon": "^3.1.9"
