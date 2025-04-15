@@ -1,0 +1,16 @@
+{
+  "name": "feater_one",
+  "version": "1.0.0",
+  "description": "Mediminder app for medicaion reminder ",
+  "license": "ISC",
+  "author": "Debanjan",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "nodemon": "^3.1.9"
+  }
+}
