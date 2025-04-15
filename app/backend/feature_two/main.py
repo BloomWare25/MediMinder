@@ -25,6 +25,10 @@ post = {
     "password": "test123",
     "updated_at": time.asctime(time.localtime(time.time())),
 }
-collection.replace_one({"_id": 1}, post) # Print one document from the "users" collection
+#collection.replace_one({"_id": 1}, post) # Print one document from the "users" collection
+
+all = collection.find({}) # Find all documents in the "users" collection
+for res in all:
+    print(res) # Print each document in the collection
 
 
