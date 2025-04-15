@@ -2,6 +2,7 @@
 from dotenv import load_dotenv # For getting env variables
 from pymongo import MongoClient # For connecting to MongoDB Atlas
 import os
+import time
 
 load_dotenv(override=False) # Load environment variables from .env file
 
@@ -21,8 +22,9 @@ post = {
     '_id': 1,
     'name': 'Romyojit',
     "email": "test@gmail.com",
-    "password": "test123"
+    "password": "test123",
+    "updated_at": time.asctime(time.localtime(time.time())),
 }
-print(collection.insert_one(post)) # Print one document from the "users" collection
+collection.replace_one({"_id": 1}, post) # Print one document from the "users" collection
 
 
