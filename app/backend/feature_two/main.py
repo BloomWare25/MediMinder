@@ -15,6 +15,6 @@ db = client["sample_mflix"] # Connect to the "sample_mflix" database
 
 print(db.list_collection_names()) # Print the names of all collections in the database
 
-collection = db["embedded_movies"] # Connect to the "embedded_movies" collection in the database
+collection = db["movies"] # Connect to the "movies" collection in the database
 
-print(collection.find_one()['fullplot']) # Print one document from the collection and its 'fullplot' field
+print(collection.find_one()) # Print one document from the collection and its 'fullplot' field
