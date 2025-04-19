@@ -32,12 +32,11 @@ print(db.list_collection_names()) # Print the names of all collections in the da
 
 collection = db["medications"] # Connect to the "medications" collection in the database
 
-all = collection.find({}) # Find all documents in the "medications" collection
 
 @app.get("/")
 def first_example():
     med = Medication(
-        userId="Romyojit",
+        userId=usrId,
         medicineName="paracetamol",
         dosage="500mg",
         intakeTime="Two times a day.",
@@ -47,7 +46,15 @@ def first_example():
     collection.insert_one(med.model_dump()) # Create the document with _id in the "medications" collection
     return {"message": "Medication added successfully!"} # Return a success message
 
+@app.get("/data")
+def get_data(id: str): # Define a GET endpoint to receive data
+    # Define a function to receive data from the request
+    global usrId
+    usrId = id
+    print(id) # Print the id received from the request
+    return {"message": "Data received successfully!"}
 
+all = collection.find({}) # Find all documents in the "medications" collection
 for res in all:
     print(res) # Print each document in the collection
 
