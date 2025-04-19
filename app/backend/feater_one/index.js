@@ -2,6 +2,7 @@
 import express from "express" ;
 import { connectDb } from "./db/connection.db.js"
 
+// env configeration 
 import 'dotenv/config'
 
 const port = process.env.PORT || 3000 ;
@@ -20,5 +21,8 @@ connectDb()
         console.log(`App listening at http://localhost:${port}`);
     })
     
+})
+.catch((err)  => {
+    console.log(err);
 })
 
