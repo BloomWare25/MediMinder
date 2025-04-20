@@ -6,4 +6,4 @@
 |_|  |_|_____|____/___|_|  |_|___|_| \_|____/|_____|_| \_\
 
 # User Authentication with js
-## Authentication with node.ja
+## Authentication with node.js
