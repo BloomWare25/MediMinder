@@ -1,6 +1,6 @@
 // Featur one will be maintained by Debanjan it leads us to the sign in process 
-import express from "express" ;
-import { connectDb } from "./db/connection.db.js"
+import { connectDb } from "./db/connection.db.js" ;
+import { app } from "./app.js" ;
 
 // env configeration 
 import 'dotenv/config'
@@ -8,8 +8,6 @@ import 'dotenv/config'
 const port = process.env.PORT || 3000 ;
 
 
-
-const app = express() ;
 
 connectDb()
 .then(() => {

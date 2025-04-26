@@ -1,23 +1,25 @@
 import mongoose, { model } from "mongoose"
 import bcrypt from "bcrypt"
-import { jwt } from "jsonwebtoken"
+import  jwt  from "jsonwebtoken"
 
-new userSchema = mongoose.Schema({
+// user should pass all the required fields
+
+const userSchema = new mongoose.Schema({
     email: {
         type: String,
         required:[ true , "Email is required"],
-        unique: true,
-        index: true, //for fast searching of user faster 
+        unique: true
     },
     fullName: {
         type: String,
-        requied: [true , "Full name is required"],
+        requied: [true , "Full name is required"] ,
         lowercase: true,
-    },
-    userName: {
-        type: String,
         trim: true
-    }, 
+    },
+    gender: {
+        type: String ,
+        required: [true , "Please select your gender"]    
+    },
     medical_history:{
         type: [
             {
@@ -35,7 +37,8 @@ new userSchema = mongoose.Schema({
         ]
     },
     password:{
-        type: String
+        type: String ,
+        required: [true , "passwod is required"]
         
     },
     avatar: { //avatar represents a profile image
@@ -48,21 +51,16 @@ new userSchema = mongoose.Schema({
     timestamps : true
 });
 
-// payload for jwt 
-const payload = {
-    _id : this._id,
-    email : this.email,
-    fullName : this.fullName,
-    userName : this.userName
-}
 
-userSchema.pre("save" , async (req , res , next) => {
-    if(!this.isModified("password")){ //checcking if the user changes the password or not 
-        return next 
+
+// for validation , hashing user's password and generating session tokens 
+userSchema.pre("save", async function (next) {
+    if (!this.isModified("password")) { //checking if the user changes the password or not 
+        return next();
     }
-    this.password = await bcrypt.hash(this.password , 15) ; //hashing the user password 
-    next 
-})
+    this.password = await bcrypt.hash(this.password, 15); //hashing the user password 
+    next();
+});
 
 userSchema.methods.isPasswordCorrect = async function (password) {
     return await bcrypt.compare(password , this.password) 
@@ -72,7 +70,10 @@ userSchema.methods.isPasswordCorrect = async function (password) {
 userSchema.methods.generateAccessToken = async function (){
     return await jwt.sign(
         {
-            payload
+            _id : this._id,
+            email : this.email,
+            fullName : this.fullName,
+            userName : this.userName
         } ,
         process.env.ACCESS_TOKEN_SECRET ,
         {
