@@ -2,6 +2,7 @@ import mongoose, { model } from "mongoose"
 import bcrypt from "bcrypt"
 import  jwt  from "jsonwebtoken"
 
+
 // user should pass all the required fields
 
 const userSchema = new mongoose.Schema({
@@ -20,6 +21,20 @@ const userSchema = new mongoose.Schema({
         type: String ,
         required: [true , "Please select your gender"]    
     },
+    password:{
+        type: String ,
+        required: [true , "passwod is required"]
+        
+    },
+    age: {
+        type: Number,
+    },
+    avatar: { //avatar represents a profile image
+        type: String
+    },
+    refreshToken: {
+        type: String
+    },
     medical_history:{
         type: [
             {
@@ -35,17 +50,6 @@ const userSchema = new mongoose.Schema({
                 ref: "Medication",
             }
         ]
-    },
-    password:{
-        type: String ,
-        required: [true , "passwod is required"]
-        
-    },
-    avatar: { //avatar represents a profile image
-        type: String
-    },
-    refreshToken: {
-        type: String
     }
 } , {
     timestamps : true
@@ -73,7 +77,8 @@ userSchema.methods.generateAccessToken = async function (){
             _id : this._id,
             email : this.email,
             fullName : this.fullName,
-            userName : this.userName
+            userName : this.userName,
+            age: this.age
         } ,
         process.env.ACCESS_TOKEN_SECRET ,
         {

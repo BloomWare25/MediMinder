@@ -42,6 +42,3 @@
     "message": "User has been created successfully",
     "success": true
   ```
-
-
-
