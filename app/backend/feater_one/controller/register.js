@@ -90,6 +90,12 @@ const ifOtpVerified = asyncHandler( async (req , res) => {
     if(!user){
         throw new ApiError(500 , "Something went wrong while verifying your otp") ;
     }
+    user.save() ;
+    fs.unlink(`../utils/otps.json` , (err) => {
+        if(err){
+            console.log(err) ;
+        }
+    })
     return res
     .status(200)
     .json(
