@@ -26,9 +26,6 @@ const userSchema = new mongoose.Schema({
         required: [true , "passwod is required"]
         
     },
-    age: {
-        type: Number,
-    },
     avatar: { //avatar represents a profile image
         type: String
     },

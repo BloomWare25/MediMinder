@@ -27,6 +27,22 @@
 - Response Body:
   ```json
     "statusCode": 201,
+    "message": "Otp has been sent to the email",
+    "success": true
+  ```
+#### Verify-otp:
+**POST** `/verifyotp`
+- Description: Email verification with otp.  
+- Request Body:  
+```json
+  {
+    "email": "string",
+    "otp": "Number"
+  }
+```
+- Response Body:
+  ```json
+    "statusCode": 201,
     "data": {
         "_id": "Mongoose.ObjectId",
         "email": "emailaddress@gmail.com",
