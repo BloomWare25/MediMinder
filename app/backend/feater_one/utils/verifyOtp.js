@@ -4,17 +4,20 @@ import { asyncHandler } from './asyncHandler.js'
 
 
 const verifyOtp = asyncHandler(async (email , otp) => {
-    const user = await TemporarySignup.findOne(email);
+    const user = await TemporarySignup.findOne({email});
+    
+    
     if(!user){
         throw new ApiError(400 , 'No OTP found. Please register first.');
     }
-    if(tempSignup.otp !== otp){
+    if(TemporarySignup.otp !== otp){
         throw new ApiError(400 , "invalid otp")
     }
-    if(tempSignup.otpExpiry < Date.now()){
+    if(TemporarySignup.otpExpiry < Date.now()){
         await TemporarySignup.deleteOne({ email });
         throw new ApiError(404 , "Otp is expired. Please re register.")
     }
+    console.log(user);
     return user ;
 })
 

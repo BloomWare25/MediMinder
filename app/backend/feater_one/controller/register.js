@@ -5,33 +5,46 @@ import { ApiError } from '../utils/apiError.js'
 import { ApiResponse } from '../utils/apiResponse.js'
 import { uploadOnCloudinary } from '../utils/uploadToCloudianary.js'
 import fs from 'fs';
-import FormData from 'form-data'
 import { verifyOtp } from "../utils/verifyOtp.js"
-import axios from 'axios';
-
+import nodemailer from 'nodemailer' ;
 import 'dotenv/config' ; 
 
-const mailgunDomain = process.env.MAILGUN_DOMAIN ;
-const mailgunApiKey = process.env.MAILGUN_API_KEY ; 
+const Mygmail = process.env.MY_GMAIL ;
+const MyAppPass = process.env.MY_MAILING_APP_PASSWORD ; 
 
 
 
 // send otp function to the user email
-const sendOtp = asyncHandler( async (email , otp) => {
-    const form = new FormData();
-    form.append('from', `YourAppName <mailgun@${mailgunDomain}>`);
-    form.append('to', email);
-    form.append('subject', 'Your OTP Code');
-    form.append('text', `Your OTP code is: ${otp}. It will expire in 5 minutes.`);
-  
-    await axios.post(`https://api.mailgun.net/v3/${mailgunDomain}/messages`, form, {
-      auth: {
-        username: 'api',
-        password: mailgunApiKey,
-      },
-      headers: form.getHeaders(),
-    });
-})
+
+
+// Step 1: Configure transporter with Gmail SMTP
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: Mygmail,          // Your Gmail
+    pass:  MyAppPass            // 16-digit App Password
+  }
+});
+
+// Step 2: Function to send OTP
+function sendOtp(recipientEmail, otpCode) {
+  const mailOptions = {
+    from: Mygmail,
+    to: recipientEmail,
+    subject: 'Your OTP Code',
+    text: `Your OTP code is: ${otpCode}. It will expire in 5 minutes.`
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error('Error sending OTP email:', error);
+    } else {
+      console.log('OTP email sent:', info.response);
+    }
+  });
+}
+
+
 
 // Api 1 registering a user 
 const regUser = asyncHandler( async (req , res) => {
@@ -51,7 +64,7 @@ const regUser = asyncHandler( async (req , res) => {
             ImageLocalPath = req.file?.path ;
         }
         
-    
+        
         if(!ImageLocalPath){
             throw new ApiError(400 , "Please upload your profile image") ;
         }
@@ -64,6 +77,22 @@ const regUser = asyncHandler( async (req , res) => {
         // generate a random 6 digit number
         let otp = Math.floor(100000 + Math.random() * 900000) ; 
         const otpExpiry = Date.now() + 10 * 60 * 1000 // otp expiry withing
+
+        const tempUserExist = await TemporarySignup.findOne({email});
+        if(tempUserExist){
+            await TemporarySignup.findByIdAndUpdate(
+                tempUserExist._id , 
+                {
+                    $set: {
+                        otp: otp ,
+                        otpExpiry: otpExpiry 
+                    }
+                },
+                // {
+                //     new: true
+                // }
+            )
+        }
         const user = await TemporarySignup.create({
             email : email ,
             otp: otp,
@@ -94,11 +123,14 @@ const regUser = asyncHandler( async (req , res) => {
 })
 // Api 2 otp verification
 const ifOtpVerified = asyncHandler( async (req , res) => {
-    console.log(req.body);
     
     const {email , otp} = req.body ;
+    console.log(email , otp);
+    
 
-    const isOtpUser = await verifyOtp(email , otp)
+    const isOtpUser = await verifyOtp(email , otp) ;
+    console.log(isOtpUser);
+    
     const { userData } = isOtpUser ;
     const user = await User.create(
         {
@@ -116,7 +148,7 @@ const ifOtpVerified = asyncHandler( async (req , res) => {
     return res 
     .status(200)
     .json(
-        new ApiResponse(200 , user , "User has been verified successfully")
+        new ApiResponse(200 , createdUser , "User has been verified successfully")
     )
 })
 export {
