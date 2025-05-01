@@ -8,6 +8,7 @@ import fs from 'fs';
 import { verifyOtp } from "../utils/verifyOtp.js"
 import nodemailer from 'nodemailer' ;
 import 'dotenv/config' ; 
+import mongoose from 'mongoose'
 
 const Mygmail = process.env.MY_GMAIL ;
 const MyAppPass = process.env.MY_MAILING_APP_PASSWORD ; 
@@ -32,7 +33,7 @@ function sendOtp(recipientEmail, otpCode) {
     from: Mygmail,
     to: recipientEmail,
     subject: 'Your OTP Code',
-    text: `Your OTP code is: ${otpCode}. It will expire in 5 minutes.`
+    text: `Your OTP code for MediMinder account registration is: ${otpCode}. It will expire in 10 minutes.`
   };
 
   transporter.sendMail(mailOptions, (error, info) => {
@@ -76,21 +77,22 @@ const regUser = asyncHandler( async (req , res) => {
        
         // generate a random 6 digit number
         let otp = Math.floor(100000 + Math.random() * 900000) ; 
-        const otpExpiry = Date.now() + 10 * 60 * 1000 // otp expiry withing
+        const otpExpiry = Date.now() + 10 * 60 * 1000 // otp expiry withing 10 minutes
 
         const tempUserExist = await TemporarySignup.findOne({email});
         if(tempUserExist){
             await TemporarySignup.findByIdAndUpdate(
-                tempUserExist._id , 
+                tempUserExist._id, 
                 {
                     $set: {
                         otp: otp ,
                         otpExpiry: otpExpiry 
                     }
                 },
-                // {
-                //     new: true
-                // }
+                {
+                    new: true , 
+                    runValidators: true 
+                }
             )
         }
         const user = await TemporarySignup.create({
@@ -127,11 +129,9 @@ const ifOtpVerified = asyncHandler( async (req , res) => {
     const {email , otp} = req.body ;
     console.log(email , otp);
     
-
-    const isOtpUser = await verifyOtp(email , otp) ;
-    console.log(isOtpUser);
+    const  userData  = await verifyOtp(email , otp) ; ;
+    console.log(userData);
     
-    const { userData } = isOtpUser ;
     const user = await User.create(
         {
             email: email,

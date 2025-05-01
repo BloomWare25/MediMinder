@@ -1,3 +1,4 @@
+import { log } from 'console';
 import { TemporarySignup } from '../models/userTemData.models.js'
 import { ApiError } from './apiError.js';
 import { asyncHandler } from './asyncHandler.js'
@@ -6,19 +7,18 @@ import { asyncHandler } from './asyncHandler.js'
 const verifyOtp = asyncHandler(async (email , otp) => {
     const user = await TemporarySignup.findOne({email});
     
-    
     if(!user){
         throw new ApiError(400 , 'No OTP found. Please register first.');
     }
-    if(TemporarySignup.otp !== otp){
+    if(user.otp !== otp){
         throw new ApiError(400 , "invalid otp")
     }
-    if(TemporarySignup.otpExpiry < Date.now()){
+    if(user.otpExpiry < Date.now()){
         await TemporarySignup.deleteOne({ email });
         throw new ApiError(404 , "Otp is expired. Please re register.")
     }
-    console.log(user);
-    return user ;
+    console.log(user.userData);
+    return user.userData ;
 })
 
 export {verifyOtp}
