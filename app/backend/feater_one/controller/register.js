@@ -29,11 +29,83 @@ const transporter = nodemailer.createTransport({
 
 // Step 2: Function to send OTP
 function sendOtp(recipientEmail, otpCode) {
+    if (!recipientEmail || typeof recipientEmail !== 'string') {
+        console.error('Invalid recipient email:', recipientEmail);
+        return;
+      }
   const mailOptions = {
     from: Mygmail,
     to: recipientEmail,
     subject: 'Your OTP Code',
-    text: `Your OTP code for MediMinder account registration is: ${otpCode}. It will expire in 10 minutes.`
+    html: `
+        <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+      <title>MediMinder OTP</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          background-color: #f9f9f9;
+          margin: 0;
+          padding: 0;
+        }
+        .container {
+          max-width: 480px;
+          margin: 20px auto;
+          background-color: #ffffff;
+          border-radius: 10px;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+          overflow: hidden;
+        }
+        .header {
+          background-color: #4CAF50;
+          padding: 20px;
+          text-align: center;
+          color: white;
+        }
+        .header img {
+          max-height: 50px;
+        }
+        .content {
+          padding: 20px;
+        }
+        .otp {
+          font-size: 28px;
+          font-weight: bold;
+          color: #333;
+          text-align: center;
+          margin: 20px 0;
+        }
+        .footer {
+          font-size: 12px;
+          color: #777;
+          text-align: center;
+          padding: 10px 20px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <img src="https://yourdomain.com/logo.png" alt="MediMinder Logo" />
+          <h2>MediMinder</h2>
+        </div>
+        <div class="content">
+          <p>Hello,</p>
+          <p>Use the OTP below to complete your registration:</p>
+          <div class="otp">${otpCode}</div>
+          <p>This OTP will expire in 10 minutes. Do not share it with anyone.</p>
+        </div>
+        <div class="footer">
+          If you didn’t request this, you can ignore this email.<br>
+          Thank you for using MediMinder!<br>
+        </div>
+      </div>
+    </body>
+    </html>
+  `
   };
 
   transporter.sendMail(mailOptions, (error, info) => {
@@ -54,7 +126,11 @@ const regUser = asyncHandler( async (req , res) => {
     if([email , fullName , gender , password].some((field) => field?.trim() === "")){
         throw new ApiError(400 , "All fields are required") ;
     }
-    
+    const ifAlreadyExists = await User.findOne({email}) ;
+    if(ifAlreadyExists){
+      throw new ApiError(400 , "User already exists")
+    }
+
     try {
         const existedUser = await User.findOne({email}) ;
         if(existedUser){
@@ -120,35 +196,37 @@ const regUser = asyncHandler( async (req , res) => {
             new ApiResponse(201 , "Otp has sent to the email")
         )
     } catch (error) {
-        throw new ApiError(500 , "server issue")
+        throw new ApiError(500 , error , "server issue")
     }
 })
 // Api 2 otp verification
 const ifOtpVerified = asyncHandler( async (req , res) => {
     
     const {email , otp} = req.body ;
-    console.log(email , otp);
     
-    const  userData  = await verifyOtp(email , otp) ; ;
-    console.log(userData);
-    
+    const userData = await verifyOtp(email, otp);
+    if (!userData) {
+        throw new ApiError(400, "Invalid OTP or OTP verification failed");
+    }
+
+    const {fullName , gender , password , avatar } = userData ;
     const user = await User.create(
         {
             email: email,
-            fullName: userData.fullName ,
-            gender: userData.gender ,
-            password: userData.password,
-            avatar: userData.avatar ,
+            fullName: fullName ,
+            gender: gender ,
+            password: password,
+            avatar: avatar ,
         }
     )
     if(!user){
         throw new ApiError(501 , "Server can't create the user. please re register ")
     }
-    const createdUser = User.findById(user._id).select("-refreshToken -password")
+
     return res 
     .status(200)
     .json(
-        new ApiResponse(200 , createdUser , "User has been verified successfully")
+        new ApiResponse(200 , user , "User has been verified & created successfully")
     )
 })
 export {

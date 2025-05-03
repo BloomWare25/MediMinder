@@ -39,9 +39,7 @@ const TemporarySignupSchema = new mongoose.Schema({
             required: true
         },
     }
-}, {
-    timestamps: true
-})
+},) ;
 
 TemporarySignupSchema.index({ "otpExpiry": 1 }, { expireAfterSeconds: 0 });
 
