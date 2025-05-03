@@ -22,6 +22,8 @@ load_dotenv(override=False) # Load environment variables from .env file
 
 uri = os.getenv("MONGO_ATLAS_STRING") # Get the MongoDB connection string from environment variables
 
+print(uri) # Print the connection string for debugging
+
 client = MongoClient(uri) # Create a MongoClient instance to connect to MongoDB Atlas
 
 print(client.list_database_names()) # Print the names of all databases in the MongoDB instance
