@@ -8,14 +8,40 @@ import fs from 'fs';
 import nodemailer from 'nodemailer' ;
 import { verifyOtp } from '../utils/verifyOtp.js'
 import 'dotenv/config' ; 
-import mongoose from 'mongoose'
+import { log } from 'console'
+
 
 const Mygmail = process.env.MY_GMAIL ;
 const MyAppPass = process.env.MY_MAILING_APP_PASSWORD ; 
 
 
 
+// token genereation function
+const genAccessRefreshToken = async (userID) => {
+    try {
+      
+      const user = await User.findById(userID) ;
 
+      if(!user){
+        throw new ApiError(404 , null , "User not found") ;
+      }
+      
+      
+      const accesstoken = await user.generateAccessToken() ;
+      const refreshtoken = await user.generateRefreshToken() ;
+      
+      if(!accesstoken || !refreshtoken){
+        throw new ApiError(500 , null , "server issue generating token") ;
+      }
+      
+      user.refreshtoken = refreshtoken ;
+
+      await user.save({validateBeforeSave : false})
+      return { accesstoken , refreshtoken } ;
+    } catch (error) {
+      throw new ApiError(500 , error , "server issue creating token") ;
+    }
+}
 
 
 // Step 1: Configure transporter with Gmail SMTP
@@ -118,7 +144,7 @@ function sendOtp(recipientEmail, otpCode) {
 }
 
 // function for sending response to the client that the user has been registered successfully
-const sendUserSuccessfull = (recipientEmail , name) => {
+const sendUserSuccessfull = (req , recipientEmail , name) => {
   const mailOptions = {
     from: Mygmail,
     to: recipientEmail,
@@ -212,17 +238,113 @@ const sendUserSuccessfull = (recipientEmail , name) => {
   transporter.sendMail(mailOptions, (error, info) => {
     try {
       if (error) {
-        console.error('Error sending OTP email:', error);
-        throw new ApiError(500 , error , "Otp sending failed") ;
+        console.error('success msg failed', error);
+        throw new ApiError(500 , error , "success msg failed") ;
       } else {
         console.log('OTP email sent:', info.response);
       }
     } catch (error) {
-      throw new ApiError(500 , error , "Otp sending failed") ;
+      throw new ApiError(500 , error , "success msg failed") ;
     }
   });
 }
 
+const sendUserLogedIn = (recipientEmail , name) => {
+  const loginTime = new Date().toLocaleString() ; 
+  const mailOptions = {
+    from: Mygmail,
+    to: recipientEmail,
+    subject: 'Login Notification',
+    html: `
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Notification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #4CAF50;
+            padding: 20px;
+            text-align: center;
+            color: white;
+        }
+        .header img {
+            max-height: 50px;
+        }
+        .content {
+            padding: 20px;
+        }
+        .footer {
+            font-size: 12px;
+            color: #777;
+            text-align: center;
+            padding: 10px 20px;
+        }
+        .cta-button {
+            display: inline-block;
+            margin: 20px 0;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .cta-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>💊 MediMinder 💊</h2>
+        </div>
+        <div class="content">
+            <h2>Hello ${name},</h2>
+            <p>👋 We noticed a login to your MediMinder account.</p>
+            <p>📅 Date and Time: ${loginTime}</p>
+            <p>If this was you, you can safely ignore this email. If you suspect any unauthorized access, please reset your password immediately.</p>
+            <a href="https://yourdomain.com/reset-password" class="cta-button">Reset Password</a>
+        </div>
+        <div class="footer">
+            If you have any questions or need assistance, feel free to contact our support team at <a href="mailto:phoenixdev2025@gmail.com">phoenixdev2025@gmail.com</a>.<br>
+            Thank you for choosing MediMinder!<br>
+            <strong>💊 The MediMinder Team 💊</strong>
+        </div>
+    </div>
+</body>
+</html>
+    `
+  };
+  transporter.sendMail(mailOptions, (error, info) => {
+    try {
+      if (error) {
+        console.error('success msg failed', error);
+        throw new ApiError(500 , error , "success msg failed") ;
+      } else {
+        console.log('OTP email sent:', info.response);
+      }
+    } catch (error) {
+      throw new ApiError(500 , error , "success msg failed") ;
+    }
+  });
+}
 // Api 1 registering a user 
 const regUser = asyncHandler( async (req , res) => {
     const {email , fullName , gender , password} = req.body ;
@@ -298,7 +420,6 @@ const regUser = asyncHandler( async (req , res) => {
             fs.unlinkSync(ImageLocalPath) ;
             throw new ApiError(502 , "Something went wrong while creating your account") ;
         }
-        console.log(otp);
         await sendOtp(email , otp ) ; 
         // const createdUser = await User.findById(user._id).select("-password -refreshToken")// we don't want to send the password and refresh token to the client
         return res
@@ -346,6 +467,9 @@ const ifOtpVerified = asyncHandler( async (req , res) => {
              gender: gender ,
              password: password,
              avatar: avatar ,
+             refreshToken: null ,
+              medical_history: [],
+              medication: []
          }
      )
      if(!user){
@@ -363,7 +487,57 @@ const ifOtpVerified = asyncHandler( async (req , res) => {
     throw new ApiError(500 , error , "server issue")
    }
 })
+
+// Api 3 Login user
+const loginUser = asyncHandler( async (req , res)=> {
+  // log in user
+  const { email , password } = req.body ;
+  if([email , password].some((field) => field?.trim() === "")) {
+    return res
+    .status(402)
+    .json(
+        new ApiError(402 , null , "All fields are required")
+    )
+  }
+  try {
+    const user = await User.findOne({email}).select("+_id") ;
+
+    if(!user){
+        return res
+        .status(404)
+        .json(
+            new ApiError(404 , null , "User not found")
+        )
+    }
+    const ifpasswordCorrect = await user.isPasswordCorrect(password) ;
+
+    if(!ifpasswordCorrect){
+        return res
+        .status(401)
+        .json(
+            new ApiError(401 , null , "Password is incorrect")
+        )
+    }
+    
+    
+    const user_id = user._id.toHexString ? user._id.toHexString() : user._id.toString();
+   
+
+    const { accesstoken , refreshtoken }= await genAccessRefreshToken(user_id) ;
+
+    user.refreshToken = refreshtoken ;
+    await sendUserLogedIn(email , user.fullName) ;
+    return res
+    .status(200)
+    .json(
+      new ApiResponse(200 , {user , accesstoken} , "User logged in successfully")
+    )
+  } catch (error) {
+    throw new ApiError(501 , error , "server issue to getting user")
+  }
+})
 export {
     regUser , 
     ifOtpVerified , 
+    loginUser , 
 }

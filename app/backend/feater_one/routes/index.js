@@ -1,6 +1,6 @@
 import express from "express"
 import { upload } from "../Middleware/upload.middleware.js"
-import { regUser , ifOtpVerified } from "../controller/register.js";
+import { regUser , ifOtpVerified , loginUser} from "../controller/register.js";
 import multer from "multer";
  
 const router = express.Router();
@@ -19,5 +19,10 @@ router.route("/verifyotp")
     ifOtpVerified 
 )
 
+// login the user through this route
+router.route("/login").post(
+    uploadUser.none(),
+    loginUser
+)
 
 export { router } 
