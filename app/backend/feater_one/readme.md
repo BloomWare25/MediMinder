@@ -58,3 +58,37 @@
     "message": "User has been created successfully",
     "success": true
   ```
+  #### Login User:
+**POST** `/login`  
+- Description: Log in an existing user.  
+- Request Body:  
+  ```json
+  {
+    "email": "string",
+    "password": "string"
+  }
+  ```
+- Response Body:
+  ```json
+  {
+    "statusCode": 200,
+    "data": {
+        "user": {
+            "_id": "Mongoose.ObjectId",
+            "email": "emailaddress@gmail.com",
+            "fullName": "fullName",
+            "gender": "Male || Female || Others",
+            "medical_history": [],
+            "medication": [],
+            "avatar": "http://res.cloudinary.com/dsz0dpj19/image/upload/someimageUrl",
+            "refreshtoken": "JWT_REFRESH_TOKEN"
+            "createdAt": "2025-04-26T12:19:15.522Z",
+            "updatedAt": "2025-04-26T12:19:15.522Z",
+            "__v": 0
+        },
+        "accesstoken": "JWT_ACCESS_TOKEN"
+    },
+    "message": "User logged in successfully",
+    "success": true
+  }
+  ```
