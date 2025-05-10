@@ -4,7 +4,7 @@ import { ApiError } from "../utils/apiError.js";
 
 const veifyJWT = async (req , res , next) => {
     try {
-        const accessToken = req.headers["Authorization"]?.split(" ")[1] || req.headers["authorization"]?.split(" ") ;
+        const accessToken = req.headers["Authorization"]?.split(" ")[1] || req.headers["authorization"]?.split(" ")[0] ;
         if(!accessToken) {
             return res
             .status(401)
@@ -14,7 +14,7 @@ const veifyJWT = async (req , res , next) => {
                     message: "No token provided",
                 }))
         }
-        const payload = await jwt.verify(accessToken[0] , process.env.ACCESS_TOKEN_SECRET) ;
+        const payload = await jwt.verify(accessToken , process.env.ACCESS_TOKEN_SECRET) ;
         if(!payload){
             return res
             .status(401)
