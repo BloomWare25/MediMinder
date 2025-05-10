@@ -8,7 +8,7 @@ import fs from 'fs';
 import nodemailer from 'nodemailer' ;
 import { verifyOtp } from '../utils/verifyOtp.js'
 import 'dotenv/config' ; 
-import { log } from 'console'
+
 
 
 const Mygmail = process.env.MY_GMAIL ;
@@ -144,7 +144,7 @@ function sendOtp(recipientEmail, otpCode) {
 }
 
 // function for sending response to the client that the user has been registered successfully
-const sendUserSuccessfull = (req , recipientEmail , name) => {
+const sendUserSuccessfull = ( recipientEmail , name) => {
   const mailOptions = {
     from: Mygmail,
     to: recipientEmail,
@@ -476,7 +476,7 @@ const ifOtpVerified = asyncHandler( async (req , res) => {
          throw new ApiError(501 , "Server can't create the user. please re register ")
      }
  
-     sendUserSuccessfull(email , fullName); 
+     sendUserSuccessfull(user.email , user.fullName) ; 
      
      return res 
      .status(200)
@@ -490,7 +490,6 @@ const ifOtpVerified = asyncHandler( async (req , res) => {
 
 // Api 3 Login user
 const loginUser = asyncHandler( async (req , res)=> {
-  // log in user
   const { email , password } = req.body ;
   if([email , password].some((field) => field?.trim() === "")) {
     return res
@@ -536,8 +535,63 @@ const loginUser = asyncHandler( async (req , res)=> {
     throw new ApiError(501 , error , "server issue to getting user")
   }
 })
+
+// Api 4 get user details 
+const userDetails = asyncHandler( async (req , res) => {
+  const user = req.user ;
+  if(!user){
+    return res
+    .status(404)
+    .json(
+        new ApiError(404 , null , "User not found")
+    )
+  }
+  const userData = await User.findById(user._id).select("-password -refreshToken") ;
+  if(!userData){
+    return res
+    .status(404)
+    .json(
+        new ApiError(404 , null , "User not found")
+    )
+  }
+  return res 
+  .status(200)
+  .json(
+    new ApiResponse(200 , userData , "User details fetched successfully")
+  )
+})
+
+// Api 5 Logout user 
+const logoutUser = asyncHandler( async (req , res) => {
+  const user = req.user ;
+  if(!user){
+    return res
+    .status(404)
+    .json(
+      new ApiError(404 , null , "User not found") 
+    )
+  }
+  const userData = await User.findById(user._id) ;
+  if(!userData){
+    return res 
+    .status(402)
+    .json(
+      new ApiError(402 , null , "User not exist please check your token")
+    )
+  }
+  userData.refreshToken = null ;
+  userData.accesstoken = null ;
+  await userData.save({validateBeforeSave: false}) ;
+  return res
+  .status(200)
+  .json(
+    new ApiResponse(200 , null , "User logged out successfully")
+  )
+})
 export {
     regUser , 
     ifOtpVerified , 
     loginUser , 
+    userDetails ,
+    logoutUser 
 }
