@@ -347,9 +347,10 @@ const sendUserLogedIn = (recipientEmail , name) => {
 }
 // Api 1 registering a user 
 const regUser = asyncHandler( async (req , res) => {
-    const {email , fullName , gender , password} = req.body ;
+    const {email , fullName , gender , age , password} = req.body ;
     
-    if([email , fullName , gender , password].some((field) => field?.trim() === "")){
+    
+    if([email , fullName , gender , age , password].some((field) => field?.trim() === "")){
         return res
         .status(402)
         .json(
@@ -365,10 +366,6 @@ const regUser = asyncHandler( async (req , res) => {
        )}
 
     try {
-        const existedUser = await User.findOne({email}) ;
-        if(existedUser){
-            throw new ApiError(400 , "User alreday exists")
-        }
         let ImageLocalPath = null ; 
         if(req.file !== null){
             ImageLocalPath = req.file?.path ;
@@ -390,7 +387,7 @@ const regUser = asyncHandler( async (req , res) => {
 
         const tempUserExist = await TemporarySignup.findOne({email});
         if(tempUserExist){
-            await TemporarySignup.findByIdAndUpdate(
+          const newTempUser = await TemporarySignup.findByIdAndUpdate(
                 tempUserExist._id, 
                 {
                     $set: {
@@ -404,6 +401,7 @@ const regUser = asyncHandler( async (req , res) => {
                 }
             )
         }
+
         const user = await TemporarySignup.create({
             email : email ,
             otp: otp,
@@ -412,10 +410,12 @@ const regUser = asyncHandler( async (req , res) => {
                 fullName ,
                 password ,
                 gender ,
+                age ,
                 avatar
             }
         })
-    
+
+        
         if(!user){
             fs.unlinkSync(ImageLocalPath) ;
             throw new ApiError(502 , "Something went wrong while creating your account") ;
@@ -435,7 +435,6 @@ const regUser = asyncHandler( async (req , res) => {
 
 // Api 2 otp verification
 const ifOtpVerified = asyncHandler( async (req , res) => {
-    
     const {email , otp} = req.body ;
     if([email , otp].some((field) => field?.trim() === "")){
       return res
@@ -455,11 +454,13 @@ const ifOtpVerified = asyncHandler( async (req , res) => {
      }
      
      const userData = await verifyOtp(email, otp);
+     
+     
      if (!userData) {
          throw new ApiError(404, "Invalid OTP or OTP verification failed");
      }
  
-     const {fullName , gender , password , avatar } = userData ;
+     const {fullName , gender , password , age , avatar } = userData ;
      const user = await User.create(
          {
              email: email,
@@ -467,6 +468,7 @@ const ifOtpVerified = asyncHandler( async (req , res) => {
              gender: gender ,
              password: password,
              avatar: avatar ,
+             age: age ,
              refreshToken: null ,
               medical_history: [],
               medication: []

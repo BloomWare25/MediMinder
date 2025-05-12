@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import bcrypt from "bcrypt" ;
 
 // email : email ,
 //         fullName : fullName ,
@@ -34,6 +35,10 @@ const TemporarySignupSchema = new mongoose.Schema({
             type: String,
             required: true
         },
+        age:{
+            type: Number,
+            required: [true , "age is required"]
+        },
         avatar: {
             type: String,
             required: true
@@ -42,6 +47,7 @@ const TemporarySignupSchema = new mongoose.Schema({
 },) ;
 
 TemporarySignupSchema.index({ "otpExpiry": 1 }, { expireAfterSeconds: 0 });
+
 
 
 export const TemporarySignup = mongoose.model("TemporarySignup" , TemporarySignupSchema)

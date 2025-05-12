@@ -1,4 +1,4 @@
-import mongoose, { model } from "mongoose"
+import mongoose from "mongoose"
 import bcrypt from "bcrypt"
 import  jwt  from "jsonwebtoken"
 
@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema({
     },
     avatar: { //avatar represents a profile image
         type: String
+    },
+    age:{
+        type: Number ,
+        required: [true , "Age is required"],
     },
     refreshToken: {
         type: String

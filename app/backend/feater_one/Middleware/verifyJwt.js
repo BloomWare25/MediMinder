@@ -4,7 +4,7 @@ import { ApiError } from "../utils/apiError.js";
 
 const veifyJWT = async (req , res , next) => {
     try {
-        const accessToken = req.headers["Authorization"]?.split(" ")[1] || req.headers["authorization"]?.split(" ")[0] ;
+        const accessToken = req.headers["Authorization"]?.split("Bearrer ")[1] || req.headers["authorization"]?.split(" ")[0] ;
         if(!accessToken) {
             return res
             .status(401)
@@ -26,6 +26,7 @@ const veifyJWT = async (req , res , next) => {
         }
     
         req.user = payload ;
+        console.log("user payload" , req.user) ;
         next() ;
     } catch (error) {
         return res
