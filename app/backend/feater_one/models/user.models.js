@@ -1,4 +1,4 @@
-import mongoose, { model } from "mongoose"
+import mongoose from "mongoose"
 import bcrypt from "bcrypt"
 import  jwt  from "jsonwebtoken"
 
@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema({
     },
     avatar: { //avatar represents a profile image
         type: String
+    },
+    age:{
+        type: Number ,
+        required: [true , "Age is required"],
     },
     refreshToken: {
         type: String
@@ -86,7 +90,7 @@ userSchema.methods.generateAccessToken = async function (){
 userSchema.methods.generateRefreshToken = async function (){
     return await jwt.sign(
         {
-            _id
+            _id: this._id,
         },
         process.env.REFRESH_TOKEN_SECRET , 
         {

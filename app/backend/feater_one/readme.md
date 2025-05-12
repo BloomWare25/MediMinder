@@ -30,16 +30,17 @@
     "message": "Otp has been sent to the email",
     "success": true
   ```
+
 #### Verify-otp:
-**POST** `/verifyotp`
+**POST** `/verifyotp`  
 - Description: Email verification with otp.  
 - Request Body:  
-```json
+  ```json
   {
     "email": "string",
     "otp": "Number"
   }
-```
+  ```
 - Response Body:
   ```json
     "statusCode": 201,
@@ -57,4 +58,105 @@
     },
     "message": "User has been created successfully",
     "success": true
+  ```
+
+#### Login User:
+**POST** `/login`  
+- Description: Log in an existing user.  
+- Request Body:  
+  ```json
+  {
+    "email": "string",
+    "password": "string"
+  }
+  ```
+- Response Body:
+  ```json
+  {
+    "statusCode": 200,
+    "data": {
+        "user": {
+            "_id": "Mongoose.ObjectId",
+            "email": "emailaddress@gmail.com",
+            "fullName": "fullName",
+            "gender": "Male || Female || Others",
+            "medical_history": [],
+            "medication": [],
+            "avatar": "http://res.cloudinary.com/dsz0dpj19/image/upload/someimageUrl",
+            "refreshtoken": "JWT_REFRESH_TOKEN",
+            "createdAt": "2025-04-26T12:19:15.522Z",
+            "updatedAt": "2025-04-26T12:19:15.522Z",
+            "__v": 0
+        },
+        "accesstoken": "JWT_ACCESS_TOKEN"
+    },
+    "message": "User logged in successfully",
+    "success": true
+  }
+  ```
+
+#### Logout User:
+**POST** `/logout`  
+- Description: Log out the currently logged-in user.  
+- Request Body:  
+  ```json
+  {
+    "email": "string"
+  }
+  ```
+- Response Body:
+  ```json
+  {
+    "statusCode": 200,
+    "message": "User logged out successfully",
+    "success": true
+  }
+  ```
+
+#### Get User Details:
+**GET** `/getuserdata`  
+- Description: Retrieve details of the currently logged-in user.  
+- Headers:  
+  ```json
+  {
+    "Authorization": "Bearer JWT_ACCESS_TOKEN"
+  }
+  ```
+- Response Body:
+  ```json
+  {
+    "statusCode": 200,
+    "data": {
+        "_id": "Mongoose.ObjectId",
+        "email": "emailaddress@gmail.com",
+        "fullName": "fullName",
+        "gender": "Male || Female || Others",
+        "medical_history": [],
+        "medication": [],
+        "avatar": "http://res.cloudinary.com/dsz0dpj19/image/upload/someimageUrl",
+        "createdAt": "2025-04-26T12:19:15.522Z",
+        "updatedAt": "2025-04-26T12:19:15.522Z",
+        "__v": 0
+    },
+    "message": "User details retrieved successfully",
+    "success": true
+  }
+  ```
+
+#### Delete Account:
+**DELETE** `/deleteacc`  
+- Description: Delete the currently logged-in user's account.  
+- Headers:  
+  ```json
+  {
+    "Authorization": "Bearer JWT_ACCESS_TOKEN"
+  }
+  ```
+- Response Body:
+  ```json
+  {
+    "statusCode": 200,
+    "message": "User account deleted successfully",
+    "success": true
+  }
   ```
