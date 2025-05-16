@@ -4,6 +4,7 @@ import { ApiError } from '../utils/apiError.js'
 import { ApiResponse } from '../utils/apiResponse.js'
 import nodemailer from 'nodemailer' ;
 import { genAccessRefreshToken }  from './register.js'
+import { findUser } from "../utils/finduser.js"
 import 'dotenv/config' ; 
 
 
@@ -157,7 +158,43 @@ const updateToken = asyncHandler(async (req , res) => {
     )
 
 })
+
+// Api 8 update user credentials password and other user credentials in totally other routes
+// Password update here
+const updatePass = asyncHandler(async (req , res) => {
+    const { oldpassword , newpassword } = req.body ;
+    console.log(oldpassword , newpassword); 
+    const user = req.user ;
+    const dbUser = await findUser(user._id) 
+    console.log(dbUser);
+    
+    const ifPassCorrect = await dbUser.isPasswordCorrect(oldpassword) ;
+    if(!ifPassCorrect){
+        return res
+        .status(303)
+        .json(
+            new ApiError(303 , null , "Incorrect password!")
+        )
+    }
+    dbUser.password = newpassword ;
+    const updatedUser = await dbUser.save({validateBeforeSave: false}) ;
+    console.log(updatedUser);
+    
+    if(!updatedUser){
+        return res
+        .status(500)
+        .json(
+            new ApiError(500 , null , "Something went wrong while updating the user password")
+        )
+    }
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200 , updatedUser , "password has been changed ")
+    )
+})
 export {
     delacc ,
-    updateToken 
+    updateToken ,
+    updatePass 
 }

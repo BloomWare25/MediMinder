@@ -161,7 +161,7 @@
   }
   ```
 #### Update Access & Refresh Token:
-**PATCH** `/refresh/upadare_token`  
+**PATCH** `/refresh/upadate_token`  
 - Description: Generate new access and refresh tokens using a valid refresh token.  
 - Headers:  
   ```json
@@ -194,3 +194,47 @@
   }
   ```
 In the above we used token rotation : in this we ensures more security. Using this every time when the accessToken expires then we frontend devloper must hit the route for new AccessToken with old refreshToken while that we will create a new refreshToken. Thats called token rotation big tech companies also use this system
+
+#### Update User Password
+**PATCH** `/user/update-password`  
+- Description: Update the user's password.  
+- Headers:  
+  ```
+  Authorization: Bearer <JWT_ACCESS_TOKEN>
+  Content-Type: application/json
+  ```
+- Request Body:
+  ```json
+  {
+    "oldpassword": "currentPassword",
+    "newpassword": "newPassword"
+  }
+  ```
+- Success Response:
+  ```json
+  {
+    "statusCode": 200,
+    "data": {
+      "_id": "Mongoose.ObjectId",
+      "email": "emailaddress@gmail.com",
+      "fullName": "fullName",
+      "gender": "Male || Female || Others",
+      "medical_history": [],
+      "medication": [],
+      "avatar": "http://res.cloudinary.com/dsz0dpj19/image/upload/someimageUrl",
+      "refreshToken": "JWT_REFRESH_TOKEN",
+      "createdAt": "2025-04-26T12:19:15.522Z",
+      "updatedAt": "2025-04-26T12:19:15.522Z",
+      "__v": 0
+    },
+    "message": "password has been changed "
+  }
+  ```
+- Error Response (Incorrect password):
+  ```json
+  {
+    "statusCode": 303,
+    "data": null,
+    "message": "Incorrect password!"
+  }
+  ```

@@ -6,7 +6,7 @@ const updateTokenRouter = express.Router() ;
 
 
 // update the access token and refresh token through this route 
-updateTokenRouter.route("/upadare_token").patch(
+updateTokenRouter.route("/upadate_token").patch(
     verifyJwtRefresh ,
     updateToken
 )

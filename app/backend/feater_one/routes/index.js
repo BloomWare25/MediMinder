@@ -4,6 +4,7 @@ import { regUser , ifOtpVerified , loginUser , userDetails , logoutUser} from ".
 import { delacc } from "../controller/delete&UpdateAcc.register.js"
 import multer from "multer";
 import { veifyJWT } from "../Middleware/verifyJwt.js"
+import { updatePass } from "../controller/delete&UpdateAcc.register.js";
  
 const router = express.Router();
 
@@ -37,6 +38,13 @@ router.route("/getuserdata").get(
 router.route("/logout").post(
     veifyJWT ,
     logoutUser
+)
+
+// update the user password 
+router.route("/update_pass").patch(
+    uploadUser.none() ,
+    veifyJWT ,
+    updatePass 
 )
 
 // delete the user account through this route

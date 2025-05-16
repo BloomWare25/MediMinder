@@ -115,7 +115,7 @@ function sendOtp(recipientEmail, otpCode) {
     <body>
       <div class="container">
         <div class="header">
-          <img src="..../logo/mediminder_logo.jpg" alt="MediMinder Logo" />
+          <img src="/mediminder_logo.jpg" alt="MediMinder Logo" />
           <h2>💊 MediMinder 💊</h2>
         </div>
         <div class="content">
@@ -207,7 +207,7 @@ const sendUserSuccessfull = ( recipientEmail , name) => {
 <body>
     <div class="container">
         <div class="header">
-            <img src="..../logo/mediminder_logo.jpg" alt="MediMinder Logo" />
+            <img src="/mediminder_logo.jpg" alt="MediMinder Logo" />
             <h2>MediMinder</h2>
         </div>
         <div class="content">
