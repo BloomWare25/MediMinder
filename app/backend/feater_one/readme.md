@@ -160,3 +160,37 @@
     "success": true
   }
   ```
+#### Update Access & Refresh Token:
+**PATCH** `/refresh/upadare_token`  
+- Description: Generate new access and refresh tokens using a valid refresh token.  
+- Headers:  
+  ```json
+  {
+    "Authorization": "Bearer JWT_REFRESH_TOKEN"
+  }
+  ```
+- Response Body:
+  ```json
+  {
+    "statusCode": 200,
+    "data": {
+        "user": {
+            "_id": "Mongoose.ObjectId",
+            "email": "emailaddress@gmail.com",
+            "fullName": "fullName",
+            "gender": "Male || Female || Others",
+            "medical_history": [],
+            "medication": [],
+            "avatar": "http://res.cloudinary.com/dsz0dpj19/image/upload/someimageUrl",
+            "refreshToken": "NEW_JWT_REFRESH_TOKEN",
+            "createdAt": "2025-04-26T12:19:15.522Z",
+            "updatedAt": "2025-04-26T12:19:15.522Z",
+            "__v": 0
+        },
+        "accesstoken": "NEW_JWT_ACCESS_TOKEN"
+    },
+    "message": "New Tokens have been generated",
+    "success": true
+  }
+  ```
+In the above we used token rotation : in this we ensures more security. Using this every time when the accessToken expires then we frontend devloper must hit the route for new AccessToken with old refreshToken while that we will create a new refreshToken. Thats called token rotation big tech companies also use this system
