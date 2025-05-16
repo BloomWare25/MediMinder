@@ -3,6 +3,7 @@ import { User } from '../models/user.models.js'
 import { ApiError } from '../utils/apiError.js'
 import { ApiResponse } from '../utils/apiResponse.js'
 import nodemailer from 'nodemailer' ;
+import { genAccessRefreshToken }  from './register.js'
 import 'dotenv/config' ; 
 
 
@@ -140,6 +141,23 @@ const delacc = asyncHandler(async (req , res) => {
     )
 })
 
+// Api 7 update the tokens refresh and access both 
+const updateToken = asyncHandler(async (req , res) => {
+    const user = req.user ;
+    const { accesstoken , refreshtoken } = await genAccessRefreshToken(user._id) ;
+    if(!accesstoken || !refreshtoken){
+        throw new ApiError(501 , null , "Can't create new access or refresh token")
+    }
+    user.refreshToken = refreshtoken ;
+    // const userCred = await user.select("-password -refreshToken") //user credentials 
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200 , { user  , "accesstoken" : accesstoken}, "New Tokens have been generated")
+    )
+
+})
 export {
-    delacc 
+    delacc ,
+    updateToken 
 }

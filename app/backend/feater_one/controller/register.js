@@ -34,7 +34,7 @@ const genAccessRefreshToken = async (userID) => {
         throw new ApiError(500 , null , "server issue generating token") ;
       }
       
-      user.refreshtoken = refreshtoken ;
+      user.refreshToken = refreshtoken ;
 
       await user.save({validateBeforeSave : false})
       return { accesstoken , refreshtoken } ;
@@ -115,7 +115,7 @@ function sendOtp(recipientEmail, otpCode) {
     <body>
       <div class="container">
         <div class="header">
-          <img src="https://yourdomain.com/logo.png" alt="MediMinder Logo" />
+          <img src="..../logo/mediminder_logo.jpg" alt="MediMinder Logo" />
           <h2>💊 MediMinder 💊</h2>
         </div>
         <div class="content">
@@ -207,7 +207,7 @@ const sendUserSuccessfull = ( recipientEmail , name) => {
 <body>
     <div class="container">
         <div class="header">
-            <img src="https://yourdomain.com/logo.png" alt="MediMinder Logo" />
+            <img src="..../logo/mediminder_logo.jpg" alt="MediMinder Logo" />
             <h2>MediMinder</h2>
         </div>
         <div class="content">
@@ -595,5 +595,6 @@ export {
     ifOtpVerified , 
     loginUser , 
     userDetails ,
-    logoutUser 
+    logoutUser ,
+    genAccessRefreshToken
 }

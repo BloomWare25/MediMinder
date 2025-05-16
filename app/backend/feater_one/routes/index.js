@@ -1,10 +1,9 @@
 import express from "express"
 import { upload } from "../Middleware/upload.middleware.js"
 import { regUser , ifOtpVerified , loginUser , userDetails , logoutUser} from "../controller/register.js";
-import { delacc } from "../controller/deleteAcc.register.js"
+import { delacc } from "../controller/delete&UpdateAcc.register.js"
 import multer from "multer";
 import { veifyJWT } from "../Middleware/verifyJwt.js"
-
  
 const router = express.Router();
 
