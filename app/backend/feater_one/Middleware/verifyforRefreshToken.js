@@ -4,8 +4,6 @@ import { User } from "../models/user.models.js";
 
 // middleware for checking if the refresh token is correct
 const verifyJwtRefresh = async (req , res , next) => {
-    console.log(req.headers["authorization"]);
-    
      const refreshToken = req.headers["authorization"]?.split("Bearrer ")[1] || req.headers["authorization"]?.split(" ")[0] ;
     try {
         if(!refreshToken){
