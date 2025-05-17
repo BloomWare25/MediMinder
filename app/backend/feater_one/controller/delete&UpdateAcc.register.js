@@ -150,11 +150,12 @@ const updateToken = asyncHandler(async (req , res) => {
         throw new ApiError(501 , null , "Can't create new access or refresh token")
     }
     user.refreshToken = refreshtoken ;
+    const newUser = await user.save({validateBeforeSave: false})
     // const userCred = await user.select("-password -refreshToken") //user credentials 
     return res
     .status(200)
     .json(
-        new ApiResponse(200 , { user  , "accesstoken" : accesstoken}, "New Tokens have been generated")
+        new ApiResponse(200 , { newUser  , "accesstoken" : accesstoken}, "New Tokens have been generated")
     )
 
 })
@@ -163,11 +164,8 @@ const updateToken = asyncHandler(async (req , res) => {
 // Password update here
 const updatePass = asyncHandler(async (req , res) => {
     const { oldpassword , newpassword } = req.body ;
-    console.log(oldpassword , newpassword); 
     const user = req.user ;
     const dbUser = await findUser(user._id) 
-    console.log(dbUser);
-    
     const ifPassCorrect = await dbUser.isPasswordCorrect(oldpassword) ;
     if(!ifPassCorrect){
         return res
@@ -178,7 +176,6 @@ const updatePass = asyncHandler(async (req , res) => {
     }
     dbUser.password = newpassword ;
     const updatedUser = await dbUser.save({validateBeforeSave: false}) ;
-    console.log(updatedUser);
     
     if(!updatedUser){
         return res
@@ -187,10 +184,16 @@ const updatePass = asyncHandler(async (req , res) => {
             new ApiError(500 , null , "Something went wrong while updating the user password")
         )
     }
+    const { accesstoken , refreshtoken } = await genAccessRefreshToken(updatedUser._id) ;
+    if(!accesstoken || !refreshtoken){
+        throw new ApiError(501 , null , "Can't create new access or refresh token")
+    }
+    updatedUser.refreshToken = refreshtoken ;
+    const tokenAddedUser = await updatedUser.save({validateBeforeSave: false}) ;
     return res
     .status(200)
     .json(
-        new ApiResponse(200 , updatedUser , "password has been changed ")
+        new ApiResponse(200 , tokenAddedUser , {"accessToken" : accesstoken } , "password has been changed ")
     )
 })
 export {
