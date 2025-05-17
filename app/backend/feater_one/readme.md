@@ -7,7 +7,7 @@
 
 # User Authentication
 ## Use the API through:
-**Base URL:** `http://localhost:5000/api/v1/auth`
+**Base URL:** `https://mediminderauth.onrender.com/api/v1/auth`
 
 ### Endpoints:
 
