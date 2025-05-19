@@ -5,6 +5,7 @@ import { delacc } from "../controller/delete&UpdateAcc.register.js"
 import multer from "multer";
 import { veifyJWT } from "../Middleware/verifyJwt.js"
 import { updatePass } from "../controller/delete&UpdateAcc.register.js";
+import { makeTheValidToken } from "../Middleware/checkForValidToken.js"
  
 const router = express.Router();
 
@@ -37,6 +38,7 @@ router.route("/getuserdata").get(
 // userlogout through this route
 router.route("/logout").post(
     veifyJWT ,
+    makeTheValidToken , 
     logoutUser
 )
 

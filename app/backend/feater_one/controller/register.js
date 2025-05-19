@@ -4,7 +4,7 @@ import { TemporarySignup } from '../models/userTemData.models.js'
 import { ApiError } from '../utils/apiError.js'
 import { ApiResponse } from '../utils/apiResponse.js'
 import { uploadOnCloudinary } from '../utils/uploadToCloudianary.js'
-import fs from 'fs';
+import fs, { access } from 'fs';
 import nodemailer from 'nodemailer' ;
 import { verifyOtp } from '../utils/verifyOtp.js'
 import 'dotenv/config' ; 
@@ -543,7 +543,7 @@ const loginUser = asyncHandler( async (req , res)=> {
       new ApiResponse(200 , {user , accesstoken} , "User logged in successfully")
     )
   } catch (error) {
-    throw new ApiError(501 , error , "server issue to getting user")
+    throw new ApiError(501 , error , "server issue to getting user at log in")
   }
 })
 
@@ -593,7 +593,9 @@ const logoutUser = asyncHandler( async (req , res) => {
   userData.refreshToken = null ;
   userData.accesstoken = null ;
   await userData.save({validateBeforeSave: false}) ;
-  return res
+  const newUser = await User.findById(userData._id) ;
+  
+    return res
   .status(200)
   .json(
     new ApiResponse(200 , null , "User logged out successfully")
