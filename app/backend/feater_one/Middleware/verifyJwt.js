@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken" ;
 import { ApiError } from "../utils/apiError.js";
+import { isTokenBlocked } from "./checkForValidToken.js"
 
 const veifyJWT = async (req , res , next) => {
     try {
@@ -23,7 +24,16 @@ const veifyJWT = async (req , res , next) => {
                     message: "Invalid token or expired",
                 }))
         }
-    
+        const ifBlockedToken = await isTokenBlocked(payload.email) ; 
+        console.log(ifBlockedToken);
+        
+        if(!ifBlockedToken){
+            return res
+            .status(404)
+            .json(
+                new ApiError(404 , null , "AccessToken has been revoked you must login first")
+            )
+        }
         req.user = payload ;
         next() ;
     } catch (error) {

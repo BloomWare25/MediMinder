@@ -1,11 +1,5 @@
 import mongoose from "mongoose";
-import bcrypt from "bcrypt" ;
 
-// email : email ,
-//         fullName : fullName ,
-//         password : password ,
-//         gender : gender ,
-//         avatar : avatar
 const TemporarySignupSchema = new mongoose.Schema({
 
     email: {
