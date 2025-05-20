@@ -530,7 +530,7 @@ const loginUser = asyncHandler( async (req , res)=> {
     }
     
     
-    const user_id = user._id.toHexString ? user._id.toHexString() : user._id.toString();
+    const user_id = user._id ;
    
 
     const { accesstoken , refreshtoken }= await genAccessRefreshToken(user_id) ;
