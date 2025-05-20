@@ -51,15 +51,9 @@ const makeTheValidToken = async (req , res , next) => {
         if(!whitelistedToken){
            throw new ApiError(501 , null , "The token can't be whitelisted")
         }
-
         next()
     } catch (error) {
         throw new ApiError(504 , error , "Something went wrong") ;
-        return res
-        .status(504)
-        .json(
-            new ApiError(504 , error , "Something went wrong") ,
-        )
     }
 }
 
