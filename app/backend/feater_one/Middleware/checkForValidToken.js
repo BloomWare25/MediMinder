@@ -5,8 +5,6 @@ import jwt from "jsonwebtoken" ;
 
 const isTokenBlocked = async(email) => {
     const user = await ExpiredToken.findOne({email}) ;
-    console.log(user);
-    
     if(user){
         return false ; 
     }else{
@@ -31,12 +29,8 @@ const makeTheValidToken = async (req , res , next) => {
 
         const { _id } = payload
         const user = await User.findOne({_id})
-        console.log(user);
         
         const refreshtoken = user.refreshToken ;
-        console.log(`refreshToken ${refreshtoken}`);
-        
-
         const tokenExpiry = 1000 * 60 * 24  ; // 1 day
         const whitelistedToken = await ExpiredToken.create(
             {
@@ -46,7 +40,6 @@ const makeTheValidToken = async (req , res , next) => {
                 email: user.email 
             }
         )
-        console.log(whitelistedToken);
         
         if(!whitelistedToken){
            throw new ApiError(501 , null , "The token can't be whitelisted")
@@ -54,11 +47,7 @@ const makeTheValidToken = async (req , res , next) => {
 
         next()
     } catch (error) {
-        throw new ApiError(504 , error , "Something went wrong") ;
-        return res
-        .status(504)
-        .json(
-            new ApiError(504 , error , "Something went wrong") ,
+        throw new ApiError(504 , error , "Something went wrong can't validate the user") ;
         )
     }
 }
