@@ -4,9 +4,10 @@ import { regUser , ifOtpVerified , loginUser , userDetails , logoutUser} from ".
 import { delacc } from "../controller/delete&UpdateAcc.register.js"
 import multer from "multer";
 import { veifyJWT } from "../Middleware/verifyJwt.js"
-import { updatePass } from "../controller/delete&UpdateAcc.register.js";
+import { updatePass } from "../controller/delete&UpdateAcc.register.js"
 import { makeTheValidToken } from "../Middleware/checkForValidToken.js"
- 
+import {cacheUser} from "../Middleware/returnsTheUserFromRedis.js"
+
 const router = express.Router();
 
 const uploadUser = multer() ;
@@ -32,6 +33,7 @@ router.route("/login").post(
 // user details through this route
 router.route("/getuserdata").get(
     veifyJWT ,
+    cacheUser ,
     userDetails
 )
 
