@@ -8,6 +8,7 @@ import fs, { access } from 'fs';
 import nodemailer from 'nodemailer' ;
 import { verifyOtp } from '../utils/verifyOtp.js'
 import 'dotenv/config' ; 
+import { client } from '../db/redis.db.js'
 
 
 
@@ -565,6 +566,7 @@ const userDetails = asyncHandler( async (req , res) => {
         new ApiError(404 , null , "User not found")
     )
   }
+  await client.SETEX(`user:${user._id}`, process.env.REDIS_DEFAULT_EXPIRY, JSON.stringify(userData.toObject()));
   return res 
   .status(200)
   .json(

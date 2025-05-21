@@ -25,7 +25,6 @@ const veifyJWT = async (req , res , next) => {
                 }))
         }
         const ifBlockedToken = await isTokenBlocked(payload.email) ; 
-        console.log(ifBlockedToken);
         
         if(!ifBlockedToken){
             return res
