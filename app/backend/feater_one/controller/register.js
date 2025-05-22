@@ -566,7 +566,18 @@ const userDetails = asyncHandler( async (req , res) => {
         new ApiError(404 , null , "User not found")
     )
   }
-  await client.SETEX(`user:${user._id}`, process.env.REDIS_DEFAULT_EXPIRY, JSON.stringify(userData.toObject()));
+
+const redisUserData = {
+  name: userData.fullName ?? '',
+  age: userData.age?.toString() ?? '',
+  email: userData.email ?? '',
+  gender: userData.gender ?? '',
+  avatar: userData.avatar ?? ''
+};
+
+await client.hset(`user:${userData._id}`, redisUserData);
+await client.expire(`user:${userData._id}`, (process.env.REDIS_DEFAULT_EXPIRY));
+
   return res 
   .status(200)
   .json(
