@@ -6,7 +6,7 @@
 |_|  |_|_____|____/___|_|  |_|___|_| \_|____/|_____|_| \_\
 
 # User Authentication
-##Author 
+## Author 
 GitHub : [Debanjan Das](https://github.com/Debanjan2007)
 ## Use the API through:
 **Base URL for user authentication:** `https://mediminderauth.onrender.com/api/v1/auth` 
