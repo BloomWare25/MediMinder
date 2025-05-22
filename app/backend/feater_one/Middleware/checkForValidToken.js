@@ -4,8 +4,7 @@ import { ApiError } from "../utils/apiError.js";
 import jwt from "jsonwebtoken" ;
 
 const isTokenBlocked = async(email) => {
-    const user = await ExpiredToken.findOne({email}) ;
-    
+    const user = await ExpiredToken.findOne({email}) ;    
     if(user){
         return false ; 
     }else{
@@ -29,10 +28,11 @@ const makeTheValidToken = async (req , res , next) => {
 
         const payload = await jwt.verify(accessToken , process.env.ACCESS_TOKEN_SECRET) ;
 
-        const { _id } = payload ; 
-        const user = await User.findOne({_id}) ; 
-        
+        const { _id } = payload
+        const user = await User.findOne({_id})
+
         const refreshtoken = user.refreshToken ;
+        
 
         const tokenExpiry = 1000 * 60 * 24  ; // 1 day
         const whitelistedToken = await ExpiredToken.create(
@@ -50,6 +50,11 @@ const makeTheValidToken = async (req , res , next) => {
         next()
     } catch (error) {
         throw new ApiError(504 , error , "Something went wrong") ;
+        return res
+        .status(504)
+        .json(
+            new ApiError(504 , error , "Something went wrong") ,
+        )
     }
 }
 
