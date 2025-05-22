@@ -238,3 +238,49 @@ In the above we used token rotation : in this we ensures more security. Using th
     "message": "Incorrect password!"
   }
   ```
+  #### Update User Credentials
+**PATCH** `/user/updateuserCred`  
+- Description: Update the user's profile information (such as full name, gender, age, or avatar).  
+- Headers:  
+  ```
+  Authorization: Bearer <JWT_ACCESS_TOKEN>
+  Content-Type: application/json
+  ```
+- Request Body (any of the following fields, as needed):
+  ```json
+  {
+    "fullName": "New Name",
+    "gender": "Male || Female || Others",
+    "age": 26,
+    "avatar": "http://res.cloudinary.com/dsz0dpj19/image/upload/newimageUrl" # not mandatory
+  }
+  ```
+- Success Response:
+  ```json
+  {
+    "statusCode": 200,
+    "data": {
+      "_id": "Mongoose.ObjectId",
+      "email": "emailaddress@gmail.com",
+      "fullName": "New Name",
+      "gender": "Male || Female || Others",
+      "age": 26,
+      "medical_history": [],
+      "medication": [],
+      "avatar": "http://res.cloudinary.com/dsz0dpj19/image/upload/newimageUrl",
+      "refreshToken": "JWT_REFRESH_TOKEN",
+      "createdAt": "2025-04-26T12:19:15.522Z",
+      "updatedAt": "2025-04-27T10:00:00.000Z",
+      "__v": 0
+    },
+    "message": "User credentials updated successfully"
+  }
+  ```
+- Error Response (if invalid data or unauthorized):
+  ```json
+  {
+    "statusCode": 400,
+    "data": null,
+    "message": "Invalid update data or unauthorized"
+  }
+  ```

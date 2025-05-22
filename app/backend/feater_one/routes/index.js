@@ -4,9 +4,10 @@ import { regUser , ifOtpVerified , loginUser , userDetails , logoutUser} from ".
 import { delacc } from "../controller/delete&UpdateAcc.register.js"
 import multer from "multer";
 import { veifyJWT } from "../Middleware/verifyJwt.js"
-import { updatePass } from "../controller/delete&UpdateAcc.register.js"
+import { updatePass , updateUserCred } from "../controller/delete&UpdateAcc.register.js"
 import { makeTheValidToken } from "../Middleware/checkForValidToken.js"
 import {cacheUser} from "../Middleware/returnsTheUserFromRedis.js"
+
 
 const router = express.Router();
 
@@ -55,5 +56,12 @@ router.route("/update_pass").patch(
 router.route("/deleteacc").delete(
     veifyJWT ,
     delacc
+)
+
+// update the user credentials through this route
+router.route("/update_user").patch(
+    upload.single("avatar"),
+    veifyJWT ,
+    updateUserCred
 )
 export { router } 
