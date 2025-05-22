@@ -5,5 +5,285 @@
 | |  | | |___| |_| | || |  | || || |\  | |_| | |___|  _ <  
 |_|  |_|_____|____/___|_|  |_|___|_| \_|____/|_____|_| \_\
 
-# User Authentication with js
-## Authentication with node.js
+# User Authentication
+##Author 
+GitHub : [Debanjan Das](https://github.com/Debanjan2007)
+## Use the API through:
+**Base URL for user authentication:** `https://mediminderauth.onrender.com/api/v1/auth` 
+**Base URL for update Tokens:**`https://mediminderauth.onrender.com/api/v1/auth/refresh`
+
+### Endpoints:
+
+#### Register User:
+**POST** `/register`  
+- Description: Create a new user account.  
+- Request Body:  
+  ```json
+  {
+    "email": "string",
+    "password": "string" ,
+    "fullName": "string",
+    "gender": "string",
+    "avatar": "string"
+  }
+  ```
+- Response Body:
+  ```json
+    "statusCode": 201,
+    "message": "Otp has been sent to the email",
+    "success": true
+  ```
+
+#### Verify-otp:
+**POST** `/verifyotp`  
+- Description: Email verification with otp.  
+- Request Body:  
+  ```json
+  {
+    "email": "string",
+    "otp": "Number"
+  }
+  ```
+- Response Body:
+  ```json
+    "statusCode": 201,
+    "data": {
+        "_id": "Mongoose.ObjectId",
+        "email": "emailaddress@gmail.com",
+        "fullName": "fullName",
+        "gender": "Male || female || Others",
+        "medical_history": [],
+        "medication": [],
+        "avatar": "http://res.cloudinary.com/dsz0dpj19/image/upload/someimageUrl",
+        "createdAt": "2025-04-26T12:19:15.522Z",
+        "updatedAt": "2025-04-26T12:19:15.522Z",
+        "__v": 0
+    },
+    "message": "User has been created successfully",
+    "success": true
+  ```
+
+#### Login User:
+**POST** `/login`  
+- Description: Log in an existing user.  
+- Request Body:  
+  ```json
+  {
+    "email": "string",
+    "password": "string"
+  }
+  ```
+- Response Body:
+  ```json
+  {
+    "statusCode": 200,
+    "data": {
+        "user": {
+            "_id": "Mongoose.ObjectId",
+            "email": "emailaddress@gmail.com",
+            "fullName": "fullName",
+            "gender": "Male || Female || Others",
+            "medical_history": [],
+            "medication": [],
+            "avatar": "http://res.cloudinary.com/dsz0dpj19/image/upload/someimageUrl",
+            "refreshtoken": "JWT_REFRESH_TOKEN",
+            "createdAt": "2025-04-26T12:19:15.522Z",
+            "updatedAt": "2025-04-26T12:19:15.522Z",
+            "__v": 0
+        },
+        "accesstoken": "JWT_ACCESS_TOKEN"
+    },
+    "message": "User logged in successfully",
+    "success": true
+  }
+  ```
+
+#### Logout User:
+**POST** `/logout`  
+- Description: Log out the currently logged-in user.  
+- Request Body:  
+  ```json
+  {
+    "email": "string"
+  }
+  ```
+- Response Body:
+  ```json
+  {
+    "statusCode": 200,
+    "message": "User logged out successfully",
+    "success": true
+  }
+  ```
+
+#### Get User Details:
+**GET** `/getuserdata`  
+- Description: Retrieve details of the currently logged-in user.  
+- Headers:  
+  ```json
+  {
+    "Authorization": "Bearer JWT_ACCESS_TOKEN"
+  }
+  ```
+- Response Body:
+  ```json
+  {
+    "statusCode": 200,
+    "data": {
+        "_id": "Mongoose.ObjectId",
+        "email": "emailaddress@gmail.com",
+        "fullName": "fullName",
+        "gender": "Male || Female || Others",
+        "medical_history": [],
+        "medication": [],
+        "avatar": "http://res.cloudinary.com/dsz0dpj19/image/upload/someimageUrl",
+        "createdAt": "2025-04-26T12:19:15.522Z",
+        "updatedAt": "2025-04-26T12:19:15.522Z",
+        "__v": 0
+    },
+    "message": "User details retrieved successfully",
+    "success": true
+  }
+  ```
+
+#### Delete Account:
+**DELETE** `/deleteacc`  
+- Description: Delete the currently logged-in user's account.  
+- Headers:  
+  ```json
+  {
+    "Authorization": "Bearer JWT_ACCESS_TOKEN"
+  }
+  ```
+- Response Body:
+  ```json
+  {
+    "statusCode": 200,
+    "message": "User account deleted successfully",
+    "success": true
+  }
+  ```
+#### Update Access & Refresh Token:
+**PATCH** `/refresh/upadate_token`  
+- Description: Generate new access and refresh tokens using a valid refresh token.  
+- Headers:  
+  ```json
+  {
+    "Authorization": "Bearer JWT_REFRESH_TOKEN"
+  }
+  ```
+- Response Body:
+  ```json
+  {
+    "statusCode": 200,
+    "data": {
+        "user": {
+            "_id": "Mongoose.ObjectId",
+            "email": "emailaddress@gmail.com",
+            "fullName": "fullName",
+            "gender": "Male || Female || Others",
+            "medical_history": [],
+            "medication": [],
+            "avatar": "http://res.cloudinary.com/dsz0dpj19/image/upload/someimageUrl",
+            "refreshToken": "NEW_JWT_REFRESH_TOKEN",
+            "createdAt": "2025-04-26T12:19:15.522Z",
+            "updatedAt": "2025-04-26T12:19:15.522Z",
+            "__v": 0
+        },
+        "accesstoken": "NEW_JWT_ACCESS_TOKEN"
+    },
+    "message": "New Tokens have been generated",
+    "success": true
+  }
+  ```
+In the above we used token rotation : in this we ensures more security. Using this every time when the accessToken expires then we frontend devloper must hit the route for new AccessToken with old refreshToken while that we will create a new refreshToken. Thats called token rotation big tech companies also use this system
+
+#### Update User Password
+**PATCH** `/user/update-password`  
+- Description: Update the user's password.  
+- Headers:  
+  ```
+  Authorization: Bearer <JWT_ACCESS_TOKEN>
+  Content-Type: application/json
+  ```
+- Request Body:
+  ```json
+  {
+    "oldpassword": "currentPassword",
+    "newpassword": "newPassword"
+  }
+  ```
+- Success Response:
+  ```json
+  {
+    "statusCode": 200,
+    "data": {
+      "_id": "Mongoose.ObjectId",
+      "email": "emailaddress@gmail.com",
+      "fullName": "fullName",
+      "gender": "Male || Female || Others",
+      "medical_history": [],
+      "medication": [],
+      "avatar": "http://res.cloudinary.com/dsz0dpj19/image/upload/someimageUrl",
+      "refreshToken": "JWT_REFRESH_TOKEN",
+      "createdAt": "2025-04-26T12:19:15.522Z",
+      "updatedAt": "2025-04-26T12:19:15.522Z",
+      "__v": 0
+    },
+    "message": "password has been changed "
+  }
+  ```
+- Error Response (Incorrect password):
+  ```json
+  {
+    "statusCode": 303,
+    "data": null,
+    "message": "Incorrect password!"
+  }
+  ```
+  #### Update User Credentials
+**PATCH** `/user/updateuserCred`  
+- Description: Update the user's profile information (such as full name, gender, age, or avatar).  
+- Headers:  
+  ```
+  Authorization: Bearer <JWT_ACCESS_TOKEN>
+  Content-Type: application/json
+  ```
+- Request Body (any of the following fields, as needed):
+  ```json
+  {
+    "fullName": "New Name",
+    "gender": "Male || Female || Others",
+    "age": 26,
+    "avatar": "http://res.cloudinary.com/dsz0dpj19/image/upload/newimageUrl" # not mandatory
+  }
+  ```
+- Success Response:
+  ```json
+  {
+    "statusCode": 200,
+    "data": {
+      "_id": "Mongoose.ObjectId",
+      "email": "emailaddress@gmail.com",
+      "fullName": "New Name",
+      "gender": "Male || Female || Others",
+      "age": 26,
+      "medical_history": [],
+      "medication": [],
+      "avatar": "http://res.cloudinary.com/dsz0dpj19/image/upload/newimageUrl",
+      "refreshToken": "JWT_REFRESH_TOKEN",
+      "createdAt": "2025-04-26T12:19:15.522Z",
+      "updatedAt": "2025-04-27T10:00:00.000Z",
+      "__v": 0
+    },
+    "message": "User credentials updated successfully"
+  }
+  ```
+- Error Response (if invalid data or unauthorized):
+  ```json
+  {
+    "statusCode": 400,
+    "data": null,
+    "message": "Invalid update data or unauthorized"
+  }
+  ```
