@@ -5,14 +5,14 @@ import { isTokenBlocked } from "./checkForValidToken.js"
 const veifyJWT = async (req , res , next) => {
     try {
         const accessToken = req.headers["authorization"]?.split("Bearrer ")[1] || req.headers["authorization"]?.split(" ")[0] ;
-        if(!accessToken) {
+        if(!accessToken || accessToken === null || accessToken === undefined){
             return res
             .status(401)
             .json(
                 new ApiError(401 , {
                     success: false,
                     message: "No token provided",
-                }))
+                } , "Token not found"))
         }
         const payload = await jwt.verify(accessToken , process.env.ACCESS_TOKEN_SECRET) ;
         if(!payload){
@@ -25,7 +25,7 @@ const veifyJWT = async (req , res , next) => {
                 }))
         }
         const ifBlockedToken = await isTokenBlocked(payload.email) ; 
-        
+
         if(!ifBlockedToken){
             return res
             .status(404)

@@ -142,7 +142,6 @@ function sendOtp(recipientEmail, otpCode) {
       .json(
         new ApiError(501 , null , "Can't send the otp")
       )
-      console.error('Error sending OTP email:', error);
     } else {
       console.log('OTP email sent:', info.response);
     }
@@ -245,7 +244,7 @@ const sendUserSuccessfull = ( recipientEmail , name) => {
     try {
       if (error) {
         console.error('success msg failed', error);
-        return res
+      return res
       .status(501)
       .json(
         new ApiError(501 , null , "Can't send the otp")
@@ -346,12 +345,20 @@ const sendUserLogedIn = (recipientEmail , name) => {
     try {
       if (error) {
         console.error('success msg failed', error);
-        throw new ApiError(500 , error , "success msg failed") ;
+        return res
+      .status(501)
+      .json(
+        new ApiError(501 , null , "Can't send the otp")
+      )
       } else {
         console.log('OTP email sent:', info.response);
       }
     } catch (error) {
-      throw new ApiError(500 , error , "success msg failed") ;
+      return res
+      .status(501)
+      .json(
+        new ApiError(501 , null , "Can't send the otp")
+      )
     }
   });
 }

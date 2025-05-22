@@ -11,7 +11,8 @@ const isTokenBlocked = async(email) => {
         return true
     }
 }
-
+// the token from logout user will be added to the expired token list
+// and the token will be blacklisted
 const makeTheValidToken = async (req , res , next) => {
     try {
         
@@ -27,8 +28,8 @@ const makeTheValidToken = async (req , res , next) => {
 
         const payload = await jwt.verify(accessToken , process.env.ACCESS_TOKEN_SECRET) ;
 
-        const { _id } = payload
-        const user = await User.findOne({_id})
+        const { _id } = payload ; 
+        const user = await User.findOne({_id}) ; 
         
         const refreshtoken = user.refreshToken ;
         const tokenExpiry = 1000 * 60 * 24  ; // 1 day

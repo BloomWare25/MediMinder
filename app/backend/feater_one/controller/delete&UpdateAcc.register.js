@@ -5,6 +5,7 @@ import { ApiResponse } from '../utils/apiResponse.js'
 import nodemailer from 'nodemailer' ;
 import { genAccessRefreshToken }  from './register.js'
 import { findUser } from "../utils/finduser.js"
+import { uploadOnCloudinary } from '../utils/uploadToCloudianary.js'
 import 'dotenv/config' ; 
 
 
@@ -196,8 +197,52 @@ const updatePass = asyncHandler(async (req , res) => {
         new ApiResponse(200 , tokenAddedUser , {"accessToken" : accesstoken } , "password has been changed ")
     )
 })
+// API 9 update the user credentials 
+const updateUserCred = asyncHandler( async (req , res) => {
+    const user = req.user ;
+    const { fullName , age , gender } = req.body ;
+    const dbUser = await findUser(user._id) ;
+    if(!dbUser){
+        return res
+        .status(404)
+        .json(
+            new ApiError(404 , null , "User not found")
+        )
+    }
+    dbUser.fullName = fullName || dbUser.fullName ;
+    dbUser.age = age || dbUser.age ;
+    dbUser.gender = gender || dbUser.gender ;
+
+    let localImage = null ;
+    if(req.file){
+        localImage = req.file.path ;
+    }
+    if(localImage){
+        const avatar = await uploadOnCloudinary(localImage) ;
+        if(!avatar){
+        throw new ApiError(501 , "Something went wrong while uploading your image") ;
+        }
+        dbUser.avatar = avatar ;
+    }
+    
+   const updatedUser = await dbUser.save({validateBeforeSave: false}) ;
+   if(!updatedUser){
+        return res
+        .status(500)
+        .json(
+            new ApiError(500 , null , "Something went wrong while updating the user credentials")
+        )
+   }
+
+   return res
+   .status(200)
+   .json(
+    new ApiResponse(200 , updatedUser ,"User credentials updated successfully" )
+   )
+})
 export {
     delacc ,
     updateToken ,
-    updatePass 
+    updatePass ,
+    updateUserCred
 }
