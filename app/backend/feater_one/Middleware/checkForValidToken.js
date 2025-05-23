@@ -3,6 +3,7 @@ import { User } from "../models/user.models.js";
 import { ApiError } from "../utils/apiError.js";
 
 const isTokenBlocked = async(email) => {
+
     const user = await ExpiredToken.findOne({email}) ;    
     if(user){
         return true ; 
@@ -40,6 +41,11 @@ const makeTheValidToken = async (req , res , next) => {
             )
         }
         const tokenExpiry =  new Date(Date.now() + 1000 * 60 * 60 * 24); // 1 day
+        const user = await User.findOne({_id}) ; 
+        
+        const refreshtoken = user.refreshToken ;
+        const tokenExpiry = 1000 * 60 * 24  ; // 1 day
+
         const whitelistedToken = await ExpiredToken.create(
             {
                 refreshToken: refreshtoken ,
@@ -54,11 +60,14 @@ const makeTheValidToken = async (req , res , next) => {
         }
         next()
     } catch (error) {
+
         return res
         .status(504)
         .json(
             new ApiError(504 , error , "Something went wrong") ,
         )
+			 throw new ApiError(500 , null , "Something went wrong")
+
     }
 }
 
