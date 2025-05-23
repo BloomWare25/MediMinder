@@ -14,6 +14,7 @@ const veifyJWT = async (req , res , next) => {
                     message: "No token provided",
                 } , "Token not found"))
         }
+        
         const payload = await jwt.verify(accessToken , process.env.ACCESS_TOKEN_SECRET) ;
         if(!payload){
             return res
@@ -25,15 +26,16 @@ const veifyJWT = async (req , res , next) => {
                 }))
         }
         const ifBlockedToken = await isTokenBlocked(payload.email) ; 
-
-        if(!ifBlockedToken){
+         if(ifBlockedToken){
             return res
             .status(404)
             .json(
                 new ApiError(404 , null , "AccessToken has been revoked you must login first")
             )
         }
+        
         req.user = payload ;
+        
         next() ;
     } catch (error) {
         return res

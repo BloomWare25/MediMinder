@@ -615,7 +615,7 @@ const logoutUser = asyncHandler( async (req , res) => {
   await userData.save({validateBeforeSave: false}) ;
   const newUser = await User.findById(userData._id) ;
   
-    return res
+  return res
   .status(200)
   .json(
     new ApiResponse(200 , null , "User logged out successfully")

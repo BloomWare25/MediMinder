@@ -7,7 +7,7 @@ import { veifyJWT } from "../Middleware/verifyJwt.js"
 import { updatePass , updateUserCred } from "../controller/delete&UpdateAcc.register.js"
 import { makeTheValidToken } from "../Middleware/checkForValidToken.js"
 import {cacheUser} from "../Middleware/returnsTheUserFromRedis.js"
-
+import { loginAfterLogout } from "../Middleware/loginAfterLogout.js"
 
 const router = express.Router();
 
@@ -28,6 +28,7 @@ router.route("/verifyotp")
 // login the user through this route
 router.route("/login").post(
     uploadUser.none(),
+    loginAfterLogout ,
     loginUser
 )
 
@@ -55,6 +56,7 @@ router.route("/update_pass").patch(
 // delete the user account through this route
 router.route("/deleteacc").delete(
     veifyJWT ,
+    makeTheValidToken ,
     delacc
 )
 

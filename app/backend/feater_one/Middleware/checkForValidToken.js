@@ -1,40 +1,45 @@
 import { ExpiredToken } from "../models/expireToken.model.js"
 import { User } from "../models/user.models.js";
 import { ApiError } from "../utils/apiError.js";
-import jwt from "jsonwebtoken" ;
 
 const isTokenBlocked = async(email) => {
     const user = await ExpiredToken.findOne({email}) ;    
     if(user){
-        return false ; 
+        return true ; 
     }else{
-        return true
+        return false ;
     }
 }
 // the token from logout user will be added to the expired token list
 // and the token will be blacklisted
 const makeTheValidToken = async (req , res , next) => {
     try {
-        
-        const accessToken = req.headers["authorization"]?.split("Bearrer ")[1] || req.headers["authorization"]?.split(" ")[0] ;
-        if(!accessToken){
+        const accessToken = req.headers["authorization"]?.split("Bearrer ")[1] || req.headers["authorization"]?.split(" ")[0] ; 
+        if(!accessToken || accessToken === null || accessToken === undefined){
             return res
-            .status(404)
+            .status(401)
             .json(
-                new ApiError(404 , null , "No AccessToken provided!")
-            )
+                new ApiError(401 , {
+                    success: false,
+                    message: "No token provided",
+                } , "Token not found"))
         }
-        
+        const payload = req.user ; 
 
-        const payload = await jwt.verify(accessToken , process.env.ACCESS_TOKEN_SECRET) ;
-
-        const { _id } = payload
+        const { _id } = payload ; 
         const user = await User.findOne({_id})
 
         const refreshtoken = user.refreshToken ;
         
-
-        const tokenExpiry = 1000 * 60 * 24  ; // 1 day
+        const ifBlockedToken = await isTokenBlocked(user.email) ; 
+            if(ifBlockedToken){
+                    return res
+            .status(404)
+            .json(
+                new ApiError(404 , null , "AccessToken has been revoked you must login first")
+            )
+        }
+        const tokenExpiry =  new Date(Date.now() + 1000 * 60 * 60 * 24); // 1 day
         const whitelistedToken = await ExpiredToken.create(
             {
                 refreshToken: refreshtoken ,
@@ -49,7 +54,6 @@ const makeTheValidToken = async (req , res , next) => {
         }
         next()
     } catch (error) {
-        throw new ApiError(504 , error , "Something went wrong") ;
         return res
         .status(504)
         .json(
