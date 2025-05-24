@@ -1,111 +1,224 @@
-<code>
- __  __ _____ ____ ___ __  __ ___ _   _ ____  _____ ____   
-|  \/  | ____|  _ \_ _|  \/  |_ _| \ | |  _ \| ____|  _ \  
-| |\/| |  _| | | | | || |\/| || ||  \| | | | |  _| | |_) | 
-| |  | | |___| |_| | || |  | || || |\  | |_| | |___|  _ <  
-|_|  |_|_____|____/___|_|  |_|___|_| \_|____/|_____|_| \_\
+# MediMinder Auth Service
 
-# User Authentication
-## Use the API through:
+A secure, scalable authentication and user management backend for the MediMinder application.
+
+---
+
+## Table of Contents
+
+- [About](#about)
+- [Tech Stack](#tech-stack)
+- [Features](#features)
+- [Setup & Installation](#setup--installation)
+- [Environment Variables](#environment-variables)
+- [API Documentation](#api-documentation)
+  - [Register User](#register-user)
+  - [Verify OTP](#verify-otp)
+  - [Login User](#login-user)
+  - [Logout User](#logout-user)
+  - [Get User Details](#get-user-details)
+  - [Delete Account](#delete-account)
+  - [Update Access & Refresh Token](#update-access--refresh-token)
+  - [Update User Password](#update-user-password)
+  - [Update User Credentials](#update-user-credentials)
+- [Token Security](#token-security)
+- [Author](#author)
+
+---
+
+## About
+
+This service provides robust user authentication and management for the MediMinder platform. It supports registration with email verification (OTP), JWT-based login, secure logout with token blacklisting, user profile management, and token rotation for enhanced security.
+
+---
+
+## Tech Stack
+
+- **Node.js** (Express)
+- **MongoDB** (Mongoose)
+- **Redis** (Upstash)
+- **JWT** for authentication
+- **Helmet, Compression, Rate Limiting** for security and performance
+- **Cloudinary** for avatar uploads
+
+---
+
+## Features
+
+- User registration with OTP email verification
+- Secure login with JWT access and refresh tokens
+- Token rotation and blacklisting (logout)
+- User profile CRUD (update credentials, password, delete account)
+- Rate limiting and security headers
+- Redis caching for user data
+
+---
+
+## Setup & Installation
+
+1. **Clone the repository:**
+   ```sh
+   git clone https://github.com/your-github-username/mediminder.git
+   cd mediminder/app/backend/feater_one
+   ```
+
+2. **Install dependencies:**
+   ```sh
+   npm install
+   ```
+
+3. **Configure environment variables:**  
+   Create a `.env` file in this directory with the following (example values):
+   ```
+   PORT=5000
+   MONGODB_URI=mongodb://localhost:27017/mediminder
+   JWT_SECRET=your_jwt_secret
+   JWT_REFRESH_SECRET=your_jwt_refresh_secret
+   REDIS_URI=redis://localhost:6379
+   REDIS_TOKEN=your_redis_token
+   REDIS_DEFAULT_EXPIRY=3600
+   CLOUDINARY_URL=cloudinary://api_key:api_secret@cloud_name
+   ```
+
+4. **Run the server:**
+   ```sh
+   npm run dev
+   ```
+
+---
+
+## Environment Variables
+
+| Name                  | Description                        |
+|-----------------------|------------------------------------|
+| PORT                  | Server port                        |
+| MONGODB_URI           | MongoDB connection string          |
+| JWT_SECRET            | JWT access token secret            |
+| JWT_REFRESH_SECRET    | JWT refresh token secret           |
+| REDIS_URI             | Redis connection URI               |
+| REDIS_TOKEN           | Redis access token (Upstash)       |
+| REDIS_DEFAULT_EXPIRY  | Redis cache expiry (in seconds)    |
+| CLOUDINARY_URL        | Cloudinary config URL              |
+
+---
+
+## API Documentation
+
 **Base URL:** `https://mediminderauth.onrender.com/api/v1/auth`
 
-### Endpoints:
+---
 
-#### Register User:
+### Register User
+
 **POST** `/register`  
-- Description: Create a new user account.  
-- Request Body:  
+Create a new user account.
+
+- **Request Body:**
   ```json
   {
     "email": "string",
-    "password": "string" ,
+    "password": "string",
     "fullName": "string",
     "gender": "string",
-    "avatar": "string",
-    "age": "Number"
+    "avatar": "string", // URL or file upload
+    "age": "number"
   }
   ```
-- Response Body:
+- **Response:**
   ```json
+  {
     "statusCode": 201,
     "message": "Otp has been sent to the email",
     "success": true
+  }
   ```
 
-#### Verify-otp:
+---
+
+### Verify OTP
+
 **POST** `/verifyotp`  
-- Description: Email verification with otp.  
-- Request Body:  
+Verify email with OTP.
+
+- **Request Body:**
   ```json
   {
     "email": "string",
-    "otp": "Number"
+    "otp": "number"
   }
   ```
-- Response Body:
+- **Response:**
   ```json
+  {
     "statusCode": 201,
     "data": {
-        "_id": "Mongoose.ObjectId",
-        "email": "emailaddress@gmail.com",
-        "fullName": "fullName",
-        "gender": "Male || female || Others",
-        "medical_history": [],
-        "medication": [],
-        "avatar": "http://res.cloudinary.com/dsz0dpj19/image/upload/someimageUrl",
-        "createdAt": "2025-04-26T12:19:15.522Z",
-        "updatedAt": "2025-04-26T12:19:15.522Z",
-        "__v": 0
+      "_id": "Mongoose.ObjectId",
+      "email": "emailaddress@gmail.com",
+      "fullName": "fullName",
+      "gender": "Male || Female || Others",
+      "medical_history": [],
+      "medication": [],
+      "avatar": "http://res.cloudinary.com/dsz0dpj19/image/upload/someimageUrl",
+      "createdAt": "2025-04-26T12:19:15.522Z",
+      "updatedAt": "2025-04-26T12:19:15.522Z",
+      "__v": 0
     },
     "message": "User has been created successfully",
     "success": true
+  }
   ```
 
-#### Login User:
+---
+
+### Login User
+
 **POST** `/login`  
-- Description: Log in an existing user.  
-- Request Body:  
+Log in an existing user.
+
+- **Request Body:**
   ```json
   {
     "email": "string",
     "password": "string"
   }
   ```
-- Response Body:
+- **Response:**
   ```json
   {
     "statusCode": 200,
     "data": {
-        "user": {
-            "_id": "Mongoose.ObjectId",
-            "email": "emailaddress@gmail.com",
-            "fullName": "fullName",
-            "gender": "Male || Female || Others",
-            "medical_history": [],
-            "medication": [],
-            "avatar": "http://res.cloudinary.com/dsz0dpj19/image/upload/someimageUrl",
-            "refreshtoken": "JWT_REFRESH_TOKEN",
-            "createdAt": "2025-04-26T12:19:15.522Z",
-            "updatedAt": "2025-04-26T12:19:15.522Z",
-            "__v": 0
-        },
-        "accesstoken": "JWT_ACCESS_TOKEN"
+      "user": {
+        "_id": "Mongoose.ObjectId",
+        "email": "emailaddress@gmail.com",
+        "fullName": "fullName",
+        "gender": "Male || Female || Others",
+        "medical_history": [],
+        "medication": [],
+        "avatar": "http://res.cloudinary.com/dsz0dpj19/image/upload/someimageUrl",
+        "refreshToken": "JWT_REFRESH_TOKEN",
+        "createdAt": "2025-04-26T12:19:15.522Z",
+        "updatedAt": "2025-04-26T12:19:15.522Z",
+        "__v": 0
+      },
+      "accesstoken": "JWT_ACCESS_TOKEN"
     },
     "message": "User logged in successfully",
     "success": true
   }
   ```
 
-#### Logout User:
+---
+
+### Logout User
+
 **POST** `/logout`  
-- Description: Log out the currently logged-in user.  
-- Request Body:  
-  ```json
-  {
-    "email": "string"
-  }
+Log out the currently logged-in user.
+
+- **Headers:**
   ```
-- Response Body:
+  Authorization: Bearer <JWT_ACCESS_TOKEN>
+  ```
+- **Response:**
   ```json
   {
     "statusCode": 200,
@@ -114,46 +227,50 @@
   }
   ```
 
-#### Get User Details:
+---
+
+### Get User Details
+
 **GET** `/getuserdata`  
-- Description: Retrieve details of the currently logged-in user.  
-- Headers:  
-  ```json
-  {
-    "Authorization": "Bearer JWT_ACCESS_TOKEN"
-  }
+Retrieve details of the currently logged-in user.
+
+- **Headers:**
   ```
-- Response Body:
+  Authorization: Bearer <JWT_ACCESS_TOKEN>
+  ```
+- **Response:**
   ```json
   {
     "statusCode": 200,
     "data": {
-        "_id": "Mongoose.ObjectId",
-        "email": "emailaddress@gmail.com",
-        "fullName": "fullName",
-        "gender": "Male || Female || Others",
-        "medical_history": [],
-        "medication": [],
-        "avatar": "http://res.cloudinary.com/dsz0dpj19/image/upload/someimageUrl",
-        "createdAt": "2025-04-26T12:19:15.522Z",
-        "updatedAt": "2025-04-26T12:19:15.522Z",
-        "__v": 0
+      "_id": "Mongoose.ObjectId",
+      "email": "emailaddress@gmail.com",
+      "fullName": "fullName",
+      "gender": "Male || Female || Others",
+      "medical_history": [],
+      "medication": [],
+      "avatar": "http://res.cloudinary.com/dsz0dpj19/image/upload/someimageUrl",
+      "createdAt": "2025-04-26T12:19:15.522Z",
+      "updatedAt": "2025-04-26T12:19:15.522Z",
+      "__v": 0
     },
     "message": "User details retrieved successfully",
     "success": true
   }
   ```
 
-#### Delete Account:
+---
+
+### Delete Account
+
 **DELETE** `/deleteacc`  
-- Description: Delete the currently logged-in user's account.  
-- Headers:  
-  ```json
-  {
-    "Authorization": "Bearer JWT_ACCESS_TOKEN"
-  }
+Delete the currently logged-in user's account.
+
+- **Headers:**
   ```
-- Response Body:
+  Authorization: Bearer <JWT_ACCESS_TOKEN>
+  ```
+- **Response:**
   ```json
   {
     "statusCode": 200,
@@ -161,57 +278,66 @@
     "success": true
   }
   ```
-#### Update Access & Refresh Token:
+
+---
+
+### Update Access & Refresh Token
+
 **PATCH** `/refresh/upadate_token`  
-- Description: Generate new access and refresh tokens using a valid refresh token.  
-- Headers:  
-  ```json
-  {
-    "Authorization": "Bearer JWT_REFRESH_TOKEN"
-  }
+Generate new access and refresh tokens using a valid refresh token.
+
+- **Headers:**
   ```
-- Response Body:
+  Authorization: Bearer <JWT_REFRESH_TOKEN>
+  ```
+- **Response:**
   ```json
   {
     "statusCode": 200,
     "data": {
-        "user": {
-            "_id": "Mongoose.ObjectId",
-            "email": "emailaddress@gmail.com",
-            "fullName": "fullName",
-            "gender": "Male || Female || Others",
-            "medical_history": [],
-            "medication": [],
-            "avatar": "http://res.cloudinary.com/dsz0dpj19/image/upload/someimageUrl",
-            "refreshToken": "NEW_JWT_REFRESH_TOKEN",
-            "createdAt": "2025-04-26T12:19:15.522Z",
-            "updatedAt": "2025-04-26T12:19:15.522Z",
-            "__v": 0
-        },
-        "accesstoken": "NEW_JWT_ACCESS_TOKEN"
+      "user": {
+        "_id": "Mongoose.ObjectId",
+        "email": "emailaddress@gmail.com",
+        "fullName": "fullName",
+        "gender": "Male || Female || Others",
+        "medical_history": [],
+        "medication": [],
+        "avatar": "http://res.cloudinary.com/dsz0dpj19/image/upload/someimageUrl",
+        "refreshToken": "NEW_JWT_REFRESH_TOKEN",
+        "createdAt": "2025-04-26T12:19:15.522Z",
+        "updatedAt": "2025-04-26T12:19:15.522Z",
+        "__v": 0
+      },
+      "accesstoken": "NEW_JWT_ACCESS_TOKEN"
     },
     "message": "New Tokens have been generated",
     "success": true
   }
   ```
-In the above we used token rotation : in this we ensures more security. Using this every time when the accessToken expires then we frontend devloper must hit the route for new AccessToken with old refreshToken while that we will create a new refreshToken. Thats called token rotation big tech companies also use this system
 
-#### Update User Password
+**Note:**  
+Token rotation is used for enhanced security. When the access token expires, the frontend should request a new access token using the refresh token, which will also rotate the refresh token.
+
+---
+
+### Update User Password
+
 **PATCH** `/user/update-password`  
-- Description: Update the user's password.  
-- Headers:  
+Update the user's password.
+
+- **Headers:**
   ```
   Authorization: Bearer <JWT_ACCESS_TOKEN>
   Content-Type: application/json
   ```
-- Request Body:
+- **Request Body:**
   ```json
   {
     "oldpassword": "currentPassword",
     "newpassword": "newPassword"
   }
   ```
-- Success Response:
+- **Success Response:**
   ```json
   {
     "statusCode": 200,
@@ -231,7 +357,7 @@ In the above we used token rotation : in this we ensures more security. Using th
     "message": "password has been changed "
   }
   ```
-- Error Response (Incorrect password):
+- **Error Response (Incorrect password):**
   ```json
   {
     "statusCode": 303,
@@ -239,24 +365,29 @@ In the above we used token rotation : in this we ensures more security. Using th
     "message": "Incorrect password!"
   }
   ```
-  #### Update User Credentials
+
+---
+
+### Update User Credentials
+
 **PATCH** `/user/updateuserCred`  
-- Description: Update the user's profile information (such as full name, gender, age, or avatar).  
-- Headers:  
+Update the user's profile information (such as full name, gender, age, or avatar).
+
+- **Headers:**
   ```
   Authorization: Bearer <JWT_ACCESS_TOKEN>
   Content-Type: application/json
   ```
-- Request Body (any of the following fields, as needed):
+- **Request Body** (any of the following fields, as needed):
   ```json
   {
     "fullName": "New Name",
     "gender": "Male || Female || Others",
     "age": 26,
-    "avatar": "http://res.cloudinary.com/dsz0dpj19/image/upload/newimageUrl" # not mandatory
+    "avatar": "http://res.cloudinary.com/dsz0dpj19/image/upload/newimageUrl"
   }
   ```
-- Success Response:
+- **Success Response:**
   ```json
   {
     "statusCode": 200,
@@ -277,7 +408,7 @@ In the above we used token rotation : in this we ensures more security. Using th
     "message": "User credentials updated successfully"
   }
   ```
-- Error Response (if invalid data or unauthorized):
+- **Error Response (if invalid data or unauthorized):**
   ```json
   {
     "statusCode": 400,
@@ -285,3 +416,22 @@ In the above we used token rotation : in this we ensures more security. Using th
     "message": "Invalid update data or unauthorized"
   }
   ```
+
+---
+
+## Token Security
+
+- **Access tokens** are short-lived and used for authentication.
+- **Refresh tokens** are rotated on use and blacklisted on logout.
+- **Blacklisted tokens** are stored in MongoDB with a TTL index for automatic cleanup.
+- **Redis** is used for caching user data to improve performance.
+
+---
+
+## Author
+
+[Debanjan (your-github-username)](https://github.com/your-github-username)
+
+---
+
+> _Feel free to fork, contribute, or open issues!_
