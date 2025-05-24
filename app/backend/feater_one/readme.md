@@ -430,8 +430,8 @@ Update the user's profile information (such as full name, gender, age, or avatar
 
 ## Author
 
-[Debanjan (your-github-username)](https://github.com/your-github-username)
+[Debanjan](https://github.com/Debanjan2007)
 
 ---
 
-> _Feel free to fork, contribute, or open issues!_
+> _Feel free to fork, or open issues!_
