@@ -21,6 +21,7 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+// sending delete mail to the user
 const delmail = (email , name) => {
   const mailOptions = {
     from: Mygmail,

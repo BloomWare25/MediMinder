@@ -18,7 +18,7 @@ const verifyOtp = async (email , otp) => {
         await TemporarySignup.deleteOne({ email });
         throw new ApiError(404 , "Otp is expired. Please re register.")
     }
-  
+    await TemporarySignup.findOneAndDelete({email});
     return user.userData ;
 }
 

@@ -15,7 +15,7 @@ const veifyJWT = async (req , res , next) => {
                 } , "Token not found"))
         }
         
-        const payload = await jwt.verify(accessToken , process.env.ACCESS_TOKEN_SECRET) ;
+        const payload = await jwt.verify(accessToken , process.env.ACCESS_TOKEN_SECRET) ; // it return a false statement if the token is expired or invalid
         if(!payload){
             return res
             .status(401)

@@ -21,7 +21,8 @@
     "password": "string" ,
     "fullName": "string",
     "gender": "string",
-    "avatar": "string"
+    "avatar": "string",
+    "age": "Number"
   }
   ```
 - Response Body:

@@ -60,6 +60,7 @@ function sendOtp(recipientEmail, otpCode) {
         console.error('Invalid recipient email:', recipientEmail);
         return;
       }
+      // sencing otp 
   const mailOptions = {
     from: Mygmail,
     to: recipientEmail,
@@ -93,7 +94,7 @@ function sendOtp(recipientEmail, otpCode) {
           color: white;
         }
         .header img {
-          max-height: 50px;
+          max-height: 150px;
         }
         .content {
           padding: 20px;
@@ -116,7 +117,7 @@ function sendOtp(recipientEmail, otpCode) {
     <body>
       <div class="container">
         <div class="header">
-          <img src="/mediminder_logo.jpg" alt="MediMinder Logo" />
+          <img src="https://res.cloudinary.com/dgyy4hghb/image/upload/v1748085861/medimindr_logo_sok7zq.jpg" alt="MediMinder Logo" />
           <h2>💊 MediMinder 💊</h2>
         </div>
         <div class="content">
@@ -183,7 +184,7 @@ const sendUserSuccessfull = ( recipientEmail , name) => {
             color: white;
         }
         .header img {
-            max-height: 50px;
+            max-height: 150px;
         }
         .content {
             padding: 20px;
@@ -207,12 +208,15 @@ const sendUserSuccessfull = ( recipientEmail , name) => {
         .cta-button:hover {
             background-color: #45a049;
         }
+        img{
+            
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <img src="/mediminder_logo.jpg" alt="MediMinder Logo" />
+            <img src="https://res.cloudinary.com/dgyy4hghb/image/upload/v1748085861/medimindr_logo_sok7zq.jpg" alt="MediMinder Logo" />
             <h2>MediMinder</h2>
         </div>
         <div class="content">
@@ -257,7 +261,7 @@ const sendUserSuccessfull = ( recipientEmail , name) => {
     }
   });
 }
-
+// log in mssg sending 
 const sendUserLogedIn = (recipientEmail , name) => {
   const loginTime = new Date().toLocaleString() ; 
   const mailOptions = {
@@ -495,8 +499,12 @@ const ifOtpVerified = asyncHandler( async (req , res) => {
          throw new ApiError(501 , "Server can't create the user. please re register ")
      }
  
-     sendUserSuccessfull(user.email , user.fullName) ; 
+      
      
+     setTimeout(async () => {
+      sendUserSuccessfull(user.email , user.fullName) ;
+    },500) 
+
      return res 
      .status(200)
      .json(
@@ -545,6 +553,7 @@ const loginUser = asyncHandler( async (req , res)=> {
 
     user.refreshToken = refreshtoken ;
     await sendUserLogedIn(email , user.fullName) ;
+
     return res
     .status(200)
     .json(
