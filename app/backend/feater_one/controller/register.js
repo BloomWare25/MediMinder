@@ -552,6 +552,7 @@ const loginUser = asyncHandler( async (req , res)=> {
     const { accesstoken , refreshtoken }= await genAccessRefreshToken(user_id) ;
 
     user.refreshToken = refreshtoken ;
+    await user.save({validateBeforeSave: false}) ;
     await sendUserLogedIn(email , user.fullName) ;
 
     return res
@@ -630,11 +631,123 @@ const logoutUser = asyncHandler( async (req , res) => {
     new ApiResponse(200 , null , "User logged out successfully")
   )
 })
+
+// Api 10 forgot password log in
+const loginpassForgotOtpSend = asyncHandler( async (req , res)=> {
+  const { email } = req.body ;
+  try {
+    if([email].some((field) => field?.trim() === "")){
+      return res
+      .status(402)
+      .json(
+        new ApiError(402 , null , "All fields are required")
+      )
+    }
+    const otp = Math.floor(100000 + Math.random() * 900000) ; // generate a random 6 digit number
+  
+    
+    const user = await User.findOne({email}) ;
+    if(!user){
+      return res
+      .status(404)
+      .json(
+        new ApiError(404 , null , "User not found please register first")
+      )
+    }
+    const otpExpiry = Date.now() + 10 * 60 * 1000 ; // otp expiry withing 10 minutes
+    const tempUser = await TemporarySignup.create({
+      email: email ,
+      otp: otp ,
+      otpExpiry: otpExpiry ,
+      userData: {
+        fullName: user.fullName ,
+        password: user.password , 
+        gender: user.gender ,
+        age: user.age ,
+        avatar: user.avatar ,
+      }
+  })
+    if(!tempUser){
+      return res 
+      .status(501)
+      .json(
+        new ApiError(501 , null , "Can't create temporary user for forgot password")
+      )
+    }
+     await sendOtp(email , otp) ;
+  
+    return res
+    .status(200)
+    .json(
+      new ApiResponse(200 , null , "Otp has been sent to your email for login")
+    )
+  } catch (error) {
+    return res
+    .status(500)
+    .json(
+      new ApiError(500 , error , "server issue")
+    )
+  }
+ })
+
+const loginPassforgot = asyncHandler( async (req , res) => {  
+  const { email , otp } = req.body ;
+  if([email , otp].some((field) => field?.trim() === "")){
+    return res
+    .status(402)
+    .json(
+      new ApiError(402 , null , "All fields are required")
+    )
+  }
+  try {
+    const userdata = await verifyOtp(email , otp) ;
+    if(!userdata){
+      return res
+      .status(404)
+      .json(
+        new ApiError(404 , null , "Invalid OTP or OTP verification failed")
+      )
+    }
+
+    const user = await User.findOne({email}) ;
+
+    if(!user){
+      return res
+      .status(404)
+      .json(
+        new ApiError(404 , null , "User not found")
+      )
+    }
+    const { accesstoken , refreshtoken }= await genAccessRefreshToken(user._id) ;
+
+    user.refreshToken = refreshtoken ;
+    await user.save({validateBeforeSave: false}) ;
+    await sendUserLogedIn(email , user.fullName) ;
+
+    return res
+    .status(200)
+    .json(
+      new ApiResponse(200 , {user , accesstoken} , "User logged in successfully")
+    )
+
+
+  }catch (err){
+    return res
+    .status(500)
+    .json(
+      new ApiError(500 , err , "server issue")
+    )
+  }
+
+})
+
 export {
     regUser , 
     ifOtpVerified , 
     loginUser , 
     userDetails ,
     logoutUser ,
-    genAccessRefreshToken
+    genAccessRefreshToken,
+    loginpassForgotOtpSend ,
+    loginPassforgot
 }

@@ -1,6 +1,6 @@
 import express from "express"
 import { upload } from "../Middleware/upload.middleware.js"
-import { regUser , ifOtpVerified , loginUser , userDetails , logoutUser} from "../controller/register.js";
+import { regUser , ifOtpVerified , loginUser , userDetails , logoutUser , loginpassForgotOtpSend , loginPassforgot} from "../controller/register.js";
 import { delacc } from "../controller/delete&UpdateAcc.register.js"
 import multer from "multer";
 import { veifyJWT } from "../Middleware/verifyJwt.js"
@@ -65,5 +65,17 @@ router.route("/update_user").patch(
     upload.single("avatar"),
     veifyJWT ,
     updateUserCred
+)
+
+// forgot password through this route
+router.route("/forgot_pass_otp").post(
+    uploadUser.none(),
+    loginpassForgotOtpSend
+)
+
+// forgot password logging in
+router.route("/otp_login").post(
+    uploadUser.none(),
+    loginPassforgot 
 )
 export { router } 
