@@ -27,7 +27,7 @@ const TemporarySignupSchema = new mongoose.Schema({
         },
         gender: {
             type: String,
-            required: true
+            // required: true
         },
         age:{
             type: Number,
@@ -35,7 +35,7 @@ const TemporarySignupSchema = new mongoose.Schema({
         },
         avatar: {
             type: String,
-            required: true
+            // required: true
         },
     }
 },) ;

@@ -387,20 +387,23 @@ const regUser = asyncHandler( async (req , res) => {
        )}
 
     try {
-        let ImageLocalPath = null ; 
-        if(req.file !== null){
+        let ImageLocalPath = null ;
+        let avatar = null ;
+        // if the user has uploaded an image
+        if(req.file){
             ImageLocalPath = req.file?.path ;
-        }
-        
-        
-        if(!ImageLocalPath){
-            throw new ApiError(400 , "Please upload your profile image") ;
-        }
+             // if(!ImageLocalPath){
+        //     throw new ApiError(400 , "Please upload your profile image") ;
+        // }
     
-        const avatar = await uploadOnCloudinary(ImageLocalPath) ;
+        avatar = await uploadOnCloudinary(ImageLocalPath) ;
         if(!avatar){
             throw new ApiError(501 , "Something went wrong while uploading your image") ;
         }
+        }
+        
+        
+       
        
         // generate a random 6 digit number
         let otp = Math.floor(100000 + Math.random() * 900000) ; 
@@ -430,9 +433,9 @@ const regUser = asyncHandler( async (req , res) => {
             userData: {
                 fullName ,
                 password ,
-                gender ,
+                gender : gender || null ,
                 age ,
-                avatar
+                avatar : avatar || null 
             }
         })
 

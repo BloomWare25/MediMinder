@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema({
     },
     gender: {
         type: String ,
-        required: [true , "Please select your gender"]    
+        // required: [true , "Please select your gender"]    
     },
     password:{
         type: String ,
@@ -55,9 +55,6 @@ const userSchema = new mongoose.Schema({
 } , {
     timestamps : true
 });
-
-
-
 // for validation , hashing user's password and generating session tokens 
 userSchema.pre("save", async function (next) {
     if (!this.isModified("password")) { //checking if the user changes the password or not 
