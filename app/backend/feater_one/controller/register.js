@@ -744,6 +744,40 @@ const loginPassforgot = asyncHandler( async (req , res) => {
 
 })
 
+// Api 11 resend otp 
+const resendOtp = asyncHandler( async (req , res) => {
+  const { email } = req.body ;
+  if(!email || email.trim() === ""){
+    return res
+    .status(402)
+    .json(
+      new ApiError(402 , null , "Email is required")
+    )
+  }
+    const otp = Math.floor(100000 + Math.random() * 900000) ; // generate a random 6 digit number
+    const existedUser = await TemporarySignup.findOneAndUpdate({email} , 
+      {
+        $set: {
+          otp: otp ,
+          otpExpiry: Date.now() + 10 * 60 * 1000 // otp expiry withing 10 minutes
+        }
+      }
+    ) ;
+    if(!existedUser){
+      return res
+      .status(404)
+      .json(
+        new ApiError(404 , null , "User not found")
+      )
+    }
+    await sendOtp(email , otp) ;
+    return res
+    .status(200)
+    .json(
+      new ApiResponse(200 , {success : true } , "Otp has been sent to your email")
+    )
+})
+
 export {
     regUser , 
     ifOtpVerified , 
@@ -752,5 +786,6 @@ export {
     logoutUser ,
     genAccessRefreshToken,
     loginpassForgotOtpSend ,
-    loginPassforgot
+    loginPassforgot ,
+    resendOtp
 }

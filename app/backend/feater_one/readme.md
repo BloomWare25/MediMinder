@@ -170,6 +170,34 @@ Verify email with OTP.
 
 ---
 
+---
+
+### Resend otp
+**POST** `/verifyotp`  
+Verify email with OTP.
+
+- **Request Body:**
+  ```json
+  {
+    "email": "string",
+    "otp": "number"
+  }
+  ```
+- **Response:**
+  ```json
+  {
+    {
+    "statuscode" : 200 ,
+    "success": "True" ,
+    },
+    "message": "Otp has sent to your email",
+    "success": true
+  }
+  ```
+
+
+---
+
 ### Login User
 
 **POST** `/login`  

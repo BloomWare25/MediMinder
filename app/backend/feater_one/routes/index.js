@@ -1,6 +1,6 @@
 import express from "express"
 import { upload } from "../Middleware/upload.middleware.js"
-import { regUser , ifOtpVerified , loginUser , userDetails , logoutUser , loginpassForgotOtpSend , loginPassforgot} from "../controller/register.js";
+import { regUser , ifOtpVerified , loginUser , userDetails , logoutUser , loginpassForgotOtpSend , loginPassforgot , resendOtp} from "../controller/register.js";
 import { delacc } from "../controller/delete&UpdateAcc.register.js"
 import multer from "multer";
 import { veifyJWT } from "../Middleware/verifyJwt.js"
@@ -77,5 +77,11 @@ router.route("/forgot_pass_otp").post(
 router.route("/otp_login").post(
     uploadUser.none(),
     loginPassforgot 
+)
+
+// resend otp to the user
+router.route("/resend_otp").post(
+    uploadUser.none(),
+    resendOtp 
 )
 export { router } 
