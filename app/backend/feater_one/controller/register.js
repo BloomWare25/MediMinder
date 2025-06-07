@@ -558,6 +558,18 @@ const loginUser = asyncHandler( async (req , res)=> {
     await user.save({validateBeforeSave: false}) ;
     await sendUserLogedIn(email , user.fullName) ;
 
+  const redisUserData = {
+    age: user.age?.toString() ?? '',
+    email: user.email ?? '',
+    gender: user.gender ?? '',
+    avatar: user.avatar ?? '',
+    name: user.fullName ?? '',
+};
+
+await client.hset(`user:${user._id}`, redisUserData);
+await client.expire(`user:${user._id}`, (process.env.REDIS_DEFAULT_EXPIRY));
+
+
     return res
     .status(200)
     .json(
@@ -691,8 +703,8 @@ const loginpassForgotOtpSend = asyncHandler( async (req , res)=> {
       new ApiError(500 , error , "server issue")
     )
   }
- })
-
+ }) ; 
+//  loginPassforgot 
 const loginPassforgot = asyncHandler( async (req , res) => {  
   const { email , otp } = req.body ;
   if([email , otp].some((field) => field?.trim() === "")){
@@ -726,6 +738,18 @@ const loginPassforgot = asyncHandler( async (req , res) => {
     user.refreshToken = refreshtoken ;
     await user.save({validateBeforeSave: false}) ;
     await sendUserLogedIn(email , user.fullName) ;
+
+    const redisUserData = {
+    age: user.age?.toString() ?? '',
+    email: user.email ?? '',
+    gender: user.gender ?? '',
+    avatar: user.avatar ?? '',
+    name: user.fullName ?? '',
+};
+
+await client.hset(`user:${user._id}`, redisUserData);
+await client.expire(`user:${user._id}`, (process.env.REDIS_DEFAULT_EXPIRY));
+
 
     return res
     .status(200)
