@@ -564,7 +564,10 @@ const loginUser = asyncHandler( async (req , res)=> {
     
     const user_id = user._id ;
    
-
+    const isUserrevokes = await isTokenBlocked(email) ;
+     if(isUserrevokes){
+      await ExpiredToken.findOneAndDelete({email}) ;
+     }
     const { accesstoken , refreshtoken } = await genAccessRefreshToken(user_id) ;
 
     user.refreshToken = refreshtoken ;
