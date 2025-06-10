@@ -7,6 +7,8 @@ import { uploadOnCloudinary } from '../utils/uploadToCloudianary.js'
 import fs, { access } from 'fs';
 import nodemailer from 'nodemailer' ;
 import { verifyOtp } from '../utils/verifyOtp.js'
+import {isTokenBlocked} from '../Middleware/checkForValidToken.js'
+import {ExpiredToken} from '../models/expireToken.model.js'
 import 'dotenv/config' ; 
 import { client } from '../db/redis.db.js'
 
@@ -502,7 +504,10 @@ const ifOtpVerified = asyncHandler( async (req , res) => {
      if(!user){
          throw new ApiError(501 , "Server can't create the user. please re register ")
      }
- 
+     const isUserrevokes = await isTokenBlocked(email) ;
+     if(isUserrevokes){
+      await ExpiredToken.findOneAndDelete({email}) ;
+     }
     const { accesstoken , refreshtoken } =  await genAccessRefreshToken(user._id) ;
     const tokenedUser = await User.findByIdAndUpdate(user._id ,
       {

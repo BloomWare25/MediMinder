@@ -2,9 +2,9 @@ import { ExpiredToken } from "../models/expireToken.model.js"
 import { User } from "../models/user.models.js";
 import { ApiError } from "../utils/apiError.js";
 
-const isTokenBlocked = async (email , token) => {
+const isTokenBlocked = async (email) => {
     const user = await ExpiredToken.findOne({email}) ;
-    if(user && user.accessToken == token){
+    if(user){
         return true ; 
     }else{
         return false ;
@@ -15,8 +15,6 @@ const isTokenBlocked = async (email , token) => {
 const makeTheValidToken = async (req , res , next) => {
     try {
         const accessToken = req.headers["authorization"]?.split("Bearrer ")[1] || req.headers["authorization"]?.split(" ")[0] ; 
-        console.log(accessToken);
-        
         if(!accessToken || accessToken === null || accessToken === undefined){
             return res
             .status(401)
@@ -27,14 +25,12 @@ const makeTheValidToken = async (req , res , next) => {
                 } , "Token not found"))
         }
         const payload = req.user ; 
-        const accesstoken = req.headers["authorization"]?.split("Bearrer ")[1] || req.headers["authorization"]?.split(" ")[0] ;
         const { _id } = payload ; 
         const user = await User.findOne({_id})
 
         const refreshtoken = user.refreshToken ;
-        console.log(accessToken);
         
-        const ifBlockedToken = await isTokenBlocked(user.email , accesstoken) ; 
+        const ifBlockedToken = await isTokenBlocked(user.email) ; 
             if(ifBlockedToken){
                 return res
             .status(404)

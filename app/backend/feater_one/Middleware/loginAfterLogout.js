@@ -7,7 +7,7 @@ const loginAfterLogout = async (req , res , next) => {
     const accesstoken = req.headers["authorization"]?.split("Bearrer ")[1] || req.headers["authorization"]?.split(" ")[0] ;
     try {
         const email = req.body.email ;
-        const user = await  isTokenBlocked(email , accesstoken) ;
+        const user = await  isTokenBlocked(email) ;
 
         if(user){
             await ExpiredToken.findOneAndDelete({email})
