@@ -457,7 +457,7 @@ const regUser = asyncHandler( async (req , res) => {
 })
 
 
-// Api 2 otp verification
+// Api 2 otp verification for registration
 const ifOtpVerified = asyncHandler( async (req , res) => {
     const {email , otp} = req.body ;
     if([email , otp].some((field) => field?.trim() === "")){
@@ -485,6 +485,7 @@ const ifOtpVerified = asyncHandler( async (req , res) => {
      }
  
      const {fullName , gender , password , age , avatar } = userData ;
+
      const user = await User.create(
          {
              email: email,
@@ -502,7 +503,14 @@ const ifOtpVerified = asyncHandler( async (req , res) => {
          throw new ApiError(501 , "Server can't create the user. please re register ")
      }
  
-      
+    const { accesstoken , refreshtoken } =  await genAccessRefreshToken(user._id) ;
+    const tokenedUser = await User.findByIdAndUpdate(user._id ,
+      {
+          $set : {
+          refreshToken : refreshtoken ,
+        }
+      }
+    )
      
      setTimeout(async () => {
       sendUserSuccessfull(user.email , user.fullName) ;
@@ -511,7 +519,7 @@ const ifOtpVerified = asyncHandler( async (req , res) => {
      return res 
      .status(200)
      .json(
-         new ApiResponse(200 , user , "User has been verified & created successfully")
+         new ApiResponse(200 ,{ tokenedUser , accesstoken }  , "User has been verified & created successfully")
      )
    } catch (error) {
     throw new ApiError(500 , error , "server issue")
@@ -552,7 +560,7 @@ const loginUser = asyncHandler( async (req , res)=> {
     const user_id = user._id ;
    
 
-    const { accesstoken , refreshtoken }= await genAccessRefreshToken(user_id) ;
+    const { accesstoken , refreshtoken } = await genAccessRefreshToken(user_id) ;
 
     user.refreshToken = refreshtoken ;
     await user.save({validateBeforeSave: false}) ;

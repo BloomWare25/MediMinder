@@ -25,7 +25,8 @@ const veifyJWT = async (req , res , next) => {
                     message: "Invalid token or expired",
                 }))
         }
-        const ifBlockedToken = await isTokenBlocked(payload.email) ; 
+        const ifBlockedToken = await isTokenBlocked(payload.email , accessToken) ; 
+        
          if(ifBlockedToken){
             return res
             .status(404)

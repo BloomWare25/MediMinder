@@ -2,9 +2,9 @@ import { ExpiredToken } from "../models/expireToken.model.js"
 import { User } from "../models/user.models.js";
 import { ApiError } from "../utils/apiError.js";
 
-const isTokenBlocked = async(email) => {
-    const user = await ExpiredToken.findOne({email}) ;    
-    if(user){
+const isTokenBlocked = async (email , token) => {
+    const user = await ExpiredToken.findOne({email}) ;
+    if(user && user.accessToken == token){
         return true ; 
     }else{
         return false ;
@@ -15,6 +15,8 @@ const isTokenBlocked = async(email) => {
 const makeTheValidToken = async (req , res , next) => {
     try {
         const accessToken = req.headers["authorization"]?.split("Bearrer ")[1] || req.headers["authorization"]?.split(" ")[0] ; 
+        console.log(accessToken);
+        
         if(!accessToken || accessToken === null || accessToken === undefined){
             return res
             .status(401)
@@ -25,18 +27,19 @@ const makeTheValidToken = async (req , res , next) => {
                 } , "Token not found"))
         }
         const payload = req.user ; 
-
+        const accesstoken = req.headers["authorization"]?.split("Bearrer ")[1] || req.headers["authorization"]?.split(" ")[0] ;
         const { _id } = payload ; 
         const user = await User.findOne({_id})
 
         const refreshtoken = user.refreshToken ;
+        console.log(accessToken);
         
-        const ifBlockedToken = await isTokenBlocked(user.email) ; 
+        const ifBlockedToken = await isTokenBlocked(user.email , accesstoken) ; 
             if(ifBlockedToken){
-                    return res
+                return res
             .status(404)
             .json(
-                new ApiError(404 , null , "AccessToken has been revoked you must login first")
+                new ApiError(404 , null , "AccessToken has been revoked you must login or create acc first")
             )
         }
         const tokenExpiry =  new Date(Date.now() + 1000 * 60 * 60 * 24); // 1 day
@@ -55,9 +58,9 @@ const makeTheValidToken = async (req , res , next) => {
         next()
     } catch (error) {
         return res
-        .status(504)
+        .status(501)
         .json(
-            new ApiError(504 , error , "Something went wrong") ,
+            new ApiError(501 , error , "Something went wrong") ,
         )
     }
 }
