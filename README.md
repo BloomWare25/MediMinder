@@ -1,12 +1,12 @@
-<coed>
- ```
+<code>
  __  __ _____ ____ ___ __  __ ___ _   _ ____  _____ ____   
 |  \/  | ____|  _ \_ _|  \/  |_ _| \ | |  _ \| ____|  _ \  
 | |\/| |  _| | | | | || |\/| || ||  \| | | | |  _| | |_) | 
 | |  | | |___| |_| | || |  | || || |\  | |_| | |___|  _ <  
 |_|  |_|_____|____/___|_|  |_|___|_| \_|____/|_____|_| \_\
 
-
+# User Authentication with js
+## Authentication with node.js
 # MediMinder Auth Service
 
 A secure, scalable authentication and user management backend for the MediMinder application.
