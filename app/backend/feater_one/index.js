@@ -16,7 +16,7 @@ connectDb()
         throw new err ;
     })
     app.listen(port , () => {
-        console.log(`App listening`);
+        console.log(`App listening ${port}`);
     })
     
 })

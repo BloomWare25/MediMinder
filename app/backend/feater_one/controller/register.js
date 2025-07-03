@@ -5,45 +5,45 @@ import { ApiError } from '../utils/apiError.js'
 import { ApiResponse } from '../utils/apiResponse.js'
 import { uploadOnCloudinary } from '../utils/uploadToCloudianary.js'
 import fs, { access } from 'fs';
-import nodemailer from 'nodemailer' ;
+import nodemailer from 'nodemailer';
 import { verifyOtp } from '../utils/verifyOtp.js'
-import {isTokenBlocked} from '../Middleware/checkForValidToken.js'
-import {ExpiredToken} from '../models/expireToken.model.js'
-import 'dotenv/config' ; 
+import { isTokenBlocked } from '../Middleware/checkForValidToken.js'
+import { ExpiredToken } from '../models/expireToken.model.js'
+import 'dotenv/config';
 import { client } from '../db/redis.db.js'
 
 
 
-const Mygmail = process.env.MY_GMAIL ;
-const MyAppPass = process.env.MY_MAILING_APP_PASSWORD ; 
+const Mygmail = process.env.MY_GMAIL;
+const MyAppPass = process.env.MY_MAILING_APP_PASSWORD;
 
 
 
 // token genereation function
 const genAccessRefreshToken = async (userID) => {
-    try {
-      
-      const user = await User.findById(userID) ;
+  try {
 
-      if(!user){
-        throw new ApiError(404 , null , "User not found") ;
-      }
-      
-      
-      const accesstoken = await user.generateAccessToken() ;
-      const refreshtoken = await user.generateRefreshToken() ;
-      
-      if(!accesstoken || !refreshtoken){
-        throw new ApiError(500 , null , "server issue generating token") ;
-      }
-      
-      user.refreshToken = refreshtoken ;
+    const user = await User.findById(userID);
 
-      await user.save({validateBeforeSave : false})
-      return { accesstoken , refreshtoken } ;
-    } catch (error) {
-      throw new ApiError(500 , error , "server issue creating token") ;
+    if (!user) {
+      throw new ApiError(404, null, "User not found");
     }
+
+
+    const accesstoken = await user.generateAccessToken();
+    const refreshtoken = await user.generateRefreshToken();
+
+    if (!accesstoken || !refreshtoken) {
+      throw new ApiError(500, null, "server issue generating token");
+    }
+
+    user.refreshToken = refreshtoken;
+
+    await user.save({ validateBeforeSave: false })
+    return { accesstoken, refreshtoken };
+  } catch (error) {
+    throw new ApiError(500, error, "server issue creating token");
+  }
 }
 
 
@@ -52,17 +52,17 @@ const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: Mygmail,          // Your Gmail
-    pass:  MyAppPass            // 16-digit App Password
+    pass: MyAppPass            // 16-digit App Password
   }
 });
 
 // Step 2: Function to send OTP
 function sendOtp(recipientEmail, otpCode) {
-    if (!recipientEmail || typeof recipientEmail !== 'string') {
-        console.error('Invalid recipient email:', recipientEmail);
-        return;
-      }
-      // sencing otp 
+  if (!recipientEmail || typeof recipientEmail !== 'string') {
+    console.error('Invalid recipient email:', recipientEmail);
+    return;
+  }
+  // sencing otp 
   const mailOptions = {
     from: Mygmail,
     to: recipientEmail,
@@ -141,10 +141,10 @@ function sendOtp(recipientEmail, otpCode) {
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
       return res
-      .status(501)
-      .json(
-        new ApiError(501 , null , "Can't send the otp")
-      )
+        .status(501)
+        .json(
+          new ApiError(501, null, "Can't send the otp")
+        )
     } else {
       console.log('OTP email sent:', info.response);
     }
@@ -152,12 +152,12 @@ function sendOtp(recipientEmail, otpCode) {
 }
 
 // function for sending response to the client that the user has been registered successfully
-const sendUserSuccessfull = ( recipientEmail , name) => {
+const sendUserSuccessfull = (recipientEmail, name) => {
   const mailOptions = {
     from: Mygmail,
     to: recipientEmail,
     subject: 'Registration Successful',
-    html:`
+    html: `
         <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -244,28 +244,28 @@ const sendUserSuccessfull = ( recipientEmail , name) => {
     </div>
 </body>
 </html>
-        ` 
+        `
   };
   transporter.sendMail(mailOptions, (error, info) => {
     try {
       if (error) {
         console.error('success msg failed', error);
-      return res
-      .status(501)
-      .json(
-        new ApiError(501 , null , "Can't send the otp")
-      )
+        return res
+          .status(501)
+          .json(
+            new ApiError(501, null, "Can't send the otp")
+          )
       } else {
         console.log('OTP email sent:', info.response);
       }
     } catch (error) {
-      throw new ApiError(500 , error , "success msg failed") ;
+      throw new ApiError(500, error, "success msg failed");
     }
   });
 }
 // log in mssg sending 
-const sendUserLogedIn = (recipientEmail , name) => {
-  const loginTime = new Date().toLocaleString() ; 
+const sendUserLogedIn = (recipientEmail, name) => {
+  const loginTime = new Date().toLocaleString();
   const mailOptions = {
     from: Mygmail,
     to: recipientEmail,
@@ -352,480 +352,503 @@ const sendUserLogedIn = (recipientEmail , name) => {
       if (error) {
         console.error('success msg failed', error);
         return res
-      .status(501)
-      .json(
-        new ApiError(501 , null , "Can't send the otp")
-      )
+          .status(501)
+          .json(
+            new ApiError(501, null, "Can't send the otp")
+          )
       } else {
         console.log('OTP email sent:', info.response);
       }
     } catch (error) {
       return res
-      .status(501)
-      .json(
-        new ApiError(501 , null , "Can't send the otp")
-      )
+        .status(501)
+        .json(
+          new ApiError(501, null, "Can't send the otp")
+        )
     }
   });
 }
 // Api 1 registering a user 
-const regUser = asyncHandler( async (req , res) => {
-    const {email , fullName , gender , age , password} = req.body ;
-    
-    
-    if([email , fullName , gender , age , password].some((field) => field?.trim() === "")){
-        return res
-        .status(402)
-        .json(
-            new ApiError(402 , null , "All fields are required")
-        )
+const regUser = asyncHandler(async (req, res) => {
+  const { email, fullName, gender, age, password } = req.body;
+
+
+  if ([email, fullName, gender, age, password].some((field) => field?.trim() === "")) {
+    return res
+      .status(402)
+      .json(
+        new ApiError(402, null, "All fields are required")
+      )
+  }
+  const ifAlreadyExists = await User.findOne({ email });
+  if (ifAlreadyExists) {
+    return res
+      .status(400)
+      .json(
+        new ApiError(400, null, "User already exists")
+      )
+  }
+
+  try {
+    let ImageLocalPath = null;
+    let avatar = null;
+    // if the user has uploaded an image
+    if (req.file) {
+      ImageLocalPath = req.file?.path;
+      // if(!ImageLocalPath){
+      //     throw new ApiError(400 , "Please upload your profile image") ;
+      // }
+
+      avatar = await uploadOnCloudinary(ImageLocalPath);
+      if (!avatar) {
+        throw new ApiError(501, "Something went wrong while uploading your image");
+      }
     }
-    const ifAlreadyExists = await User.findOne({email}) ;
-    if(ifAlreadyExists){
-       return res
-       .status(400)
-       .json(
-          new ApiError(400 , null , "User already exists" )
-       )}
 
-    try {
-        let ImageLocalPath = null ;
-        let avatar = null ;
-        // if the user has uploaded an image
-        if(req.file){
-            ImageLocalPath = req.file?.path ;
-             // if(!ImageLocalPath){
-        //     throw new ApiError(400 , "Please upload your profile image") ;
-        // }
-    
-        avatar = await uploadOnCloudinary(ImageLocalPath) ;
-        if(!avatar){
-            throw new ApiError(501 , "Something went wrong while uploading your image") ;
-        }
-        }
-        
-        
-       
-       
-        // generate a random 6 digit number
-        let otp = Math.floor(100000 + Math.random() * 900000) ; 
-        const otpExpiry = Date.now() + 10 * 60 * 1000 // otp expiry withing 10 minutes
 
-        const tempUserExist = await TemporarySignup.findOne({email});
-        if(tempUserExist){
-          const newTempUser = await TemporarySignup.findByIdAndUpdate(
-                tempUserExist._id, 
-                {
-                    $set: {
-                        otp: otp ,
-                        otpExpiry: otpExpiry 
-                    }
-                },
-                {
-                    new: true , 
-                    runValidators: true 
-                }
-            )
-        }
 
-        const user = await TemporarySignup.create({
-            email : email ,
+
+    // generate a random 6 digit number
+    let otp = Math.floor(100000 + Math.random() * 900000);
+    const otpExpiry = Date.now() + 10 * 60 * 1000 // otp expiry withing 10 minutes
+
+    const tempUserExist = await TemporarySignup.findOne({ email });
+    if (tempUserExist) {
+      const newTempUser = await TemporarySignup.findByIdAndUpdate(
+        tempUserExist._id,
+        {
+          $set: {
             otp: otp,
-            otpExpiry: otpExpiry ,
-            userData: {
-                fullName ,
-                password ,
-                gender : gender || null ,
-                age ,
-                avatar : avatar || null 
-            }
-        })
-
-        
-        if(!user){
-            fs.unlinkSync(ImageLocalPath) ;
-            throw new ApiError(502 , "Something went wrong while creating your account") ;
+            otpExpiry: otpExpiry
+          }
+        },
+        {
+          new: true,
+          runValidators: true
         }
-        await sendOtp(email , otp ) ; 
-        // const createdUser = await User.findById(user._id).select("-password -refreshToken")// we don't want to send the password and refresh token to the client
-        return res
-        .status(201)
-        .json(
-            new ApiResponse(201 , "Otp has sent to the email")
-        )
-    } catch (error) {
-        throw new ApiError(500 , error , "server issue")
+      )
     }
+
+    const user = await TemporarySignup.create({
+      email: email,
+      otp: otp,
+      otpExpiry: otpExpiry,
+      userData: {
+        fullName,
+        password,
+        gender: gender || null,
+        age,
+        avatar: avatar || null
+      }
+    })
+
+
+    if (!user) {
+      fs.unlinkSync(ImageLocalPath);
+      throw new ApiError(502, "Something went wrong while creating your account");
+    }
+    await sendOtp(email, otp);
+    // const createdUser = await User.findById(user._id).select("-password -refreshToken")// we don't want to send the password and refresh token to the client
+    return res
+      .status(201)
+      .json(
+        new ApiResponse(201, "Otp has sent to the email")
+      )
+  } catch (error) {
+    throw new ApiError(500, error, "server issue")
+  }
 })
 
 
 // Api 2 otp verification for registration
-const ifOtpVerified = asyncHandler( async (req , res) => {
-    const {email , otp} = req.body ;
-    if([email , otp].some((field) => field?.trim() === "")){
-      return res
+const ifOtpVerified = asyncHandler(async (req, res) => {
+  const { email, otp } = req.body;
+  if ([email, otp].some((field) => field?.trim() === "")) {
+    return res
       .status(402)
       .json(
-        new ApiError(402 , null , "All fields are required")
+        new ApiError(402, null, "All fields are required")
       );
-    }
-   try {
-     const existedUser = await User.findOne({email}) ;
-     if(existedUser){
-       return res
-       .status(400)
-       .json(
-         new ApiError(400 , null , "User already exists")
-       )
-     }
-     
-     const userData = await verifyOtp(email, otp);
-     
-     
-     if (!userData) {
-         throw new ApiError(404, "Invalid OTP or OTP verification failed");
-     }
- 
-     const {fullName , gender , password , age , avatar } = userData ;
+  }
+  const existedUser = await User.findOne({ email });
+  if (existedUser) {
+    return res
+      .status(400)
+      .json(
+        new ApiError(400, null, "User already exists")
+      )
+  }
 
-     const user = await User.create(
-         {
-             email: email,
-             fullName: fullName ,
-             gender: gender ,
-             password: password,
-             avatar: avatar ,
-             age: age ,
-             refreshToken: null ,
-              medical_history: [],
-              medication: []
-         }
-     )
-     if(!user){
-         throw new ApiError(501 , "Server can't create the user. please re register ")
-     }
-     const isUserrevokes = await isTokenBlocked(email) ;
-     if(isUserrevokes){
-      await ExpiredToken.findOneAndDelete({email}) ;
-     }
-    const { accesstoken , refreshtoken } =  await genAccessRefreshToken(user._id) ;
-    const tokenedUser = await User.findByIdAndUpdate(user._id ,
+  try {
+    const userData = await verifyOtp(email, otp);
+
+
+    if (!userData) {
+      switch (userdata) {
+        case 'OU': return res
+          .status(404)
+          .json(
+            new ApiError(404, 'No user found please register first your session have been expired')
+          );
+          break;
+        case '0OTP': return res
+          .status(404)
+          .json(
+            new ApiError(404, 'Invalid otp! please check the otp again')
+          );
+          break;
+        case '0EOTP': return res
+          .status(404)
+          .json(
+            new ApiError(404, 'otp has been expired')
+          )
+      }
+    }
+
+    const { fullName, gender, password, age, avatar } = userData;
+
+    const user = await User.create(
       {
-          $set : {
-          refreshToken : refreshtoken ,
+        email: email,
+        fullName: fullName,
+        gender: gender,
+        password: password,
+        avatar: avatar,
+        age: age,
+        refreshToken: null,
+        medical_history: [],
+        medication: []
+      }
+    )
+    if (!user) {
+      throw new ApiError(501, "Server can't create the user. please re register ")
+    }
+    const isUserrevokes = await isTokenBlocked(email);
+    if (isUserrevokes) {
+      await ExpiredToken.findOneAndDelete({ email });
+    }
+    const { accesstoken, refreshtoken } = await genAccessRefreshToken(user._id);
+    const tokenedUser = await User.findByIdAndUpdate(user._id,
+      {
+        $set: {
+          refreshToken: refreshtoken,
         }
       }
     )
-     
-     setTimeout(async () => {
-      sendUserSuccessfull(user.email , user.fullName) ;
-    },500) 
 
-     return res 
-     .status(200)
-     .json(
-         new ApiResponse(200 ,{ tokenedUser , accesstoken }  , "User has been verified & created successfully")
-     )
-   } catch (error) {
-    throw new ApiError(500 , error , "server issue")
-   }
+    setTimeout(async () => {
+      sendUserSuccessfull(user.email, user.fullName);
+    }, 500)
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(200, { tokenedUser, accesstoken }, "User has been verified & created successfully")
+      )
+  } catch (error) {
+    return res
+      .status(500)
+      .json(
+        new ApiError(500, 'internal server error')
+      )
+  }
 })
 
 // Api 3 Login user
-const loginUser = asyncHandler( async (req , res)=> {
-  const { email , password } = req.body ;
-  if([email , password].some((field) => field?.trim() === "")) {
+const loginUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+  if ([email, password].some((field) => field?.trim() === "")) {
     return res
-    .status(402)
-    .json(
-        new ApiError(402 , null , "All fields are required")
-    )
+      .status(402)
+      .json(
+        new ApiError(402, null, "All fields are required")
+      )
   }
   try {
-    const user = await User.findOne({email}).select("+_id") ;
+    const user = await User.findOne({ email }).select("+_id");
 
-    if(!user){
-        return res
+    if (!user) {
+      return res
         .status(404)
         .json(
-            new ApiError(404 , null , "User not found")
+          new ApiError(404, null, "User not found")
         )
     }
-    const ifpasswordCorrect = await user.isPasswordCorrect(password) ;
+    const ifpasswordCorrect = await user.isPasswordCorrect(password);
 
-    if(!ifpasswordCorrect){
-        return res
+    if (!ifpasswordCorrect) {
+      return res
         .status(401)
         .json(
-            new ApiError(401 , null , "Password is incorrect")
+          new ApiError(401, null, "Password is incorrect")
         )
     }
-    
-    
-    const user_id = user._id ;
-   
-    const isUserrevokes = await isTokenBlocked(email) ;
-     if(isUserrevokes){
-      await ExpiredToken.findOneAndDelete({email}) ;
-     }
-    const { accesstoken , refreshtoken } = await genAccessRefreshToken(user_id) ;
 
-    user.refreshToken = refreshtoken ;
-    await user.save({validateBeforeSave: false}) ;
-    await sendUserLogedIn(email , user.fullName) ;
 
-  const redisUserData = {
-    age: user.age?.toString() ?? '',
-    email: user.email ?? '',
-    gender: user.gender ?? '',
-    avatar: user.avatar ?? '',
-    name: user.fullName ?? '',
-};
+    const user_id = user._id;
 
-await client.hset(`user:${user._id}`, redisUserData);
-await client.expire(`user:${user._id}`, (process.env.REDIS_DEFAULT_EXPIRY));
+    const isUserrevokes = await isTokenBlocked(email);
+    if (isUserrevokes) {
+      await ExpiredToken.findOneAndDelete({ email });
+    }
+    const { accesstoken, refreshtoken } = await genAccessRefreshToken(user_id);
+
+    user.refreshToken = refreshtoken;
+    await user.save({ validateBeforeSave: false });
+    await sendUserLogedIn(email, user.fullName);
+
+    const redisUserData = {
+      age: user.age?.toString() ?? '',
+      email: user.email ?? '',
+      gender: user.gender ?? '',
+      avatar: user.avatar ?? '',
+      name: user.fullName ?? '',
+    };
+
+    await client.hset(`user:${user._id}`, redisUserData);
+    await client.expire(`user:${user._id}`, (process.env.REDIS_DEFAULT_EXPIRY));
 
 
     return res
-    .status(200)
-    .json(
-      new ApiResponse(200 , {user , accesstoken} , "User logged in successfully")
-    )
+      .status(200)
+      .json(
+        new ApiResponse(200, { user, accesstoken }, "User logged in successfully")
+      )
   } catch (error) {
-    throw new ApiError(501 , error , "server issue to getting user at log in")
+    throw new ApiError(501, error, "server issue to getting user at log in")
   }
 })
 
 // Api 4 get user details 
-const userDetails = asyncHandler( async (req , res) => {
-  const user = req.user ;
-  if(!user){
+const userDetails = asyncHandler(async (req, res) => {
+  const user = req.user;
+  if (!user) {
     return res
-    .status(404)
-    .json(
-        new ApiError(404 , null , "User not found")
-    )
+      .status(404)
+      .json(
+        new ApiError(404, null, "User not found")
+      )
   }
-  const userData = await User.findById(user._id).select("-password -refreshToken") ;
-  if(!userData){
+  const userData = await User.findById(user._id).select("-password -refreshToken");
+  if (!userData) {
     return res
-    .status(404)
-    .json(
-        new ApiError(404 , null , "User not found")
-    )
+      .status(404)
+      .json(
+        new ApiError(404, null, "User not found")
+      )
   }
 
-const redisUserData = {
-  name: userData.fullName ?? '',
-  age: userData.age?.toString() ?? '',
-  email: userData.email ?? '',
-  gender: userData.gender ?? '',
-  avatar: userData.avatar ?? ''
-};
+  const redisUserData = {
+    name: userData.fullName ?? '',
+    age: userData.age?.toString() ?? '',
+    email: userData.email ?? '',
+    gender: userData.gender ?? '',
+    avatar: userData.avatar ?? ''
+  };
 
-await client.hset(`user:${userData._id}`, redisUserData);
-await client.expire(`user:${userData._id}`, (process.env.REDIS_DEFAULT_EXPIRY));
+  await client.hset(`user:${userData._id}`, redisUserData);
+  await client.expire(`user:${userData._id}`, (process.env.REDIS_DEFAULT_EXPIRY));
 
-  return res 
-  .status(200)
-  .json(
-    new ApiResponse(200 , userData , "User details fetched successfully")
-  )
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, userData, "User details fetched successfully")
+    )
 })
 
 // Api 5 Logout user 
-const logoutUser = asyncHandler( async (req , res) => {
-  const user = req.user ;
-  if(!user){
+const logoutUser = asyncHandler(async (req, res) => {
+  const user = req.user;
+  if (!user) {
     return res
-    .status(404)
-    .json(
-      new ApiError(404 , null , "User not found") 
-    )
+      .status(404)
+      .json(
+        new ApiError(404, null, "User not found")
+      )
   }
-  const userData = await User.findById(user._id) ;
-  if(!userData){
-    return res 
-    .status(402)
-    .json(
-      new ApiError(402 , null , "User not exist please check your token")
-    )
+  const userData = await User.findById(user._id);
+  if (!userData) {
+    return res
+      .status(402)
+      .json(
+        new ApiError(402, null, "User not exist please check your token")
+      )
   }
-  userData.refreshToken = null ;
-  userData.accesstoken = null ;
-  await userData.save({validateBeforeSave: false}) ;
-  const newUser = await User.findById(userData._id) ;
-  
+  userData.refreshToken = null;
+  userData.accesstoken = null;
+  await userData.save({ validateBeforeSave: false });
+  const newUser = await User.findById(userData._id);
+
   return res
-  .status(200)
-  .json(
-    new ApiResponse(200 , null , "User logged out successfully")
-  )
+    .status(200)
+    .json(
+      new ApiResponse(200, null, "User logged out successfully")
+    )
 })
 
 // Api 10 forgot password log in
-const loginpassForgotOtpSend = asyncHandler( async (req , res)=> {
-  const { email } = req.body ;
+const loginpassForgotOtpSend = asyncHandler(async (req, res) => {
+  const { email } = req.body;
   try {
-    if([email].some((field) => field?.trim() === "")){
+    if ([email].some((field) => field?.trim() === "")) {
       return res
-      .status(402)
-      .json(
-        new ApiError(402 , null , "All fields are required")
-      )
+        .status(402)
+        .json(
+          new ApiError(402, null, "All fields are required")
+        )
     }
-    const otp = Math.floor(100000 + Math.random() * 900000) ; // generate a random 6 digit number
-  
-    
-    const user = await User.findOne({email}) ;
-    if(!user){
+    const otp = Math.floor(100000 + Math.random() * 900000); // generate a random 6 digit number
+
+
+    const user = await User.findOne({ email });
+    if (!user) {
       return res
-      .status(404)
-      .json(
-        new ApiError(404 , null , "User not found please register first")
-      )
+        .status(404)
+        .json(
+          new ApiError(404, null, "User not found please register first")
+        )
     }
-    const otpExpiry = Date.now() + 10 * 60 * 1000 ; // otp expiry withing 10 minutes
+    const otpExpiry = Date.now() + 10 * 60 * 1000; // otp expiry withing 10 minutes
     const tempUser = await TemporarySignup.create({
-      email: email ,
-      otp: otp ,
-      otpExpiry: otpExpiry ,
+      email: email,
+      otp: otp,
+      otpExpiry: otpExpiry,
       userData: {
-        fullName: user.fullName ,
-        password: user.password , 
-        gender: user.gender ,
-        age: user.age ,
-        avatar: user.avatar ,
+        fullName: user.fullName,
+        password: user.password,
+        gender: user.gender,
+        age: user.age,
+        avatar: user.avatar,
       }
-  })
-    if(!tempUser){
-      return res 
-      .status(501)
-      .json(
-        new ApiError(501 , null , "Can't create temporary user for forgot password")
-      )
+    })
+    if (!tempUser) {
+      return res
+        .status(501)
+        .json(
+          new ApiError(501, null, "Can't create temporary user for forgot password")
+        )
     }
-     await sendOtp(email , otp) ;
-  
+    await sendOtp(email, otp);
+
     return res
-    .status(200)
-    .json(
-      new ApiResponse(200 , null , "Otp has been sent to your email for login")
-    )
+      .status(200)
+      .json(
+        new ApiResponse(200, null, "Otp has been sent to your email for login")
+      )
   } catch (error) {
     return res
-    .status(500)
-    .json(
-      new ApiError(500 , error , "server issue")
-    )
+      .status(500)
+      .json(
+        new ApiError(500, error, "server issue")
+      )
   }
- }) ; 
+});
 //  loginPassforgot 
-const loginPassforgot = asyncHandler( async (req , res) => {  
-  const { email , otp } = req.body ;
-  if([email , otp].some((field) => field?.trim() === "")){
+const loginPassforgot = asyncHandler(async (req, res) => {
+  const { email, otp } = req.body;
+  if ([email, otp].some((field) => field?.trim() === "")) {
     return res
-    .status(402)
-    .json(
-      new ApiError(402 , null , "All fields are required")
-    )
+      .status(402)
+      .json(
+        new ApiError(402, null, "All fields are required")
+      )
   }
   try {
-    const userdata = await verifyOtp(email , otp) ;
-    if(!userdata){
+    const userdata = await verifyOtp(email, otp);
+    if (!userdata) {
       return res
-      .status(404)
-      .json(
-        new ApiError(404 , null , "Invalid OTP or OTP verification failed")
-      )
+        .status(404)
+        .json(
+          new ApiError(404, null, "Invalid OTP or OTP verification failed")
+        )
     }
 
-    const user = await User.findOne({email}) ;
+    const user = await User.findOne({ email });
 
-    if(!user){
+    if (!user) {
       return res
-      .status(404)
-      .json(
-        new ApiError(404 , null , "User not found")
-      )
+        .status(404)
+        .json(
+          new ApiError(404, null, "User not found")
+        )
     }
-    const { accesstoken , refreshtoken }= await genAccessRefreshToken(user._id) ;
+    const { accesstoken, refreshtoken } = await genAccessRefreshToken(user._id);
 
-    user.refreshToken = refreshtoken ;
-    await user.save({validateBeforeSave: false}) ;
-    await sendUserLogedIn(email , user.fullName) ;
+    user.refreshToken = refreshtoken;
+    await user.save({ validateBeforeSave: false });
+    await sendUserLogedIn(email, user.fullName);
 
     const redisUserData = {
-    age: user.age?.toString() ?? '',
-    email: user.email ?? '',
-    gender: user.gender ?? '',
-    avatar: user.avatar ?? '',
-    name: user.fullName ?? '',
-};
+      age: user.age?.toString() ?? '',
+      email: user.email ?? '',
+      gender: user.gender ?? '',
+      avatar: user.avatar ?? '',
+      name: user.fullName ?? '',
+    };
 
-await client.hset(`user:${user._id}`, redisUserData);
-await client.expire(`user:${user._id}`, (process.env.REDIS_DEFAULT_EXPIRY));
+    await client.hset(`user:${user._id}`, redisUserData);
+    await client.expire(`user:${user._id}`, (process.env.REDIS_DEFAULT_EXPIRY));
 
 
     return res
-    .status(200)
-    .json(
-      new ApiResponse(200 , {user , accesstoken} , "User logged in successfully")
-    )
+      .status(200)
+      .json(
+        new ApiResponse(200, { user, accesstoken }, "User logged in successfully")
+      )
 
 
-  }catch (err){
+  } catch (err) {
     return res
-    .status(500)
-    .json(
-      new ApiError(500 , err , "server issue")
-    )
+      .status(500)
+      .json(
+        new ApiError(500, err, "server issue")
+      )
   }
 
 })
 
 // Api 11 resend otp 
-const resendOtp = asyncHandler( async (req , res) => {
-  const { email } = req.body ;
-  if(!email || email.trim() === ""){
+const resendOtp = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  if (!email || email.trim() === "") {
     return res
-    .status(402)
-    .json(
-      new ApiError(402 , null , "Email is required")
-    )
+      .status(402)
+      .json(
+        new ApiError(402, null, "Email is required")
+      )
   }
-    const otp = Math.floor(100000 + Math.random() * 900000) ; // generate a random 6 digit number
-    const existedUser = await TemporarySignup.findOneAndUpdate({email} , 
-      {
-        $set: {
-          otp: otp ,
-          otpExpiry: Date.now() + 10 * 60 * 1000 // otp expiry withing 10 minutes
-        }
+  const otp = Math.floor(100000 + Math.random() * 900000); // generate a random 6 digit number
+  const existedUser = await TemporarySignup.findOneAndUpdate({ email },
+    {
+      $set: {
+        otp: otp,
+        otpExpiry: Date.now() + 10 * 60 * 1000 // otp expiry withing 10 minutes
       }
-    ) ;
-    if(!existedUser){
-      return res
+    }
+  );
+  if (!existedUser) {
+    return res
       .status(404)
       .json(
-        new ApiError(404 , null , "User not found")
+        new ApiError(404, null, "User not found")
       )
-    }
-    await sendOtp(email , otp) ;
-    return res
+  }
+  await sendOtp(email, otp);
+  return res
     .status(200)
     .json(
-      new ApiResponse(200 , {success : true } , "Otp has been sent to your email")
+      new ApiResponse(200, { success: true }, "Otp has been sent to your email")
     )
 })
 
 export {
-    regUser , 
-    ifOtpVerified , 
-    loginUser , 
-    userDetails ,
-    logoutUser ,
-    genAccessRefreshToken,
-    loginpassForgotOtpSend ,
-    loginPassforgot ,
-    resendOtp
+  regUser,
+  ifOtpVerified,
+  loginUser,
+  userDetails,
+  logoutUser,
+  genAccessRefreshToken,
+  loginpassForgotOtpSend,
+  loginPassforgot,
+  resendOtp
 }
