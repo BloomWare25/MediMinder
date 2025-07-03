@@ -1,0 +1,4 @@
+dotenv
+pymongo
+pydantic
+fastapi
