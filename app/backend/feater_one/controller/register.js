@@ -480,29 +480,32 @@ const ifOtpVerified = asyncHandler(async (req, res) => {
   }
 
   try {
-    const userData = await verifyOtp(email, otp);
+    const userData = await verifyOtp(email, otp);    
+    // error handling for the edge error cases
+    switch (userData) {
+      case 'OU': return res
+        .status(404)
+        .json({
+          stasusCode: 404,
+          success: false,
+          message: 'No user found please register first your session have been expired'
+        })
 
+      case '0OTP': return res
+        .status(404)
+        .json({
+          stasusCode: 404,
+          success: false,
+          message: 'Invalid OTP! Please check the OTP again'
+        });
 
-    if (!userData) {
-      switch (userdata) {
-        case 'OU': return res
-          .status(404)
-          .json(
-            new ApiError(404, 'No user found please register first your session have been expired')
-          );
-          break;
-        case '0OTP': return res
-          .status(404)
-          .json(
-            new ApiError(404, 'Invalid otp! please check the otp again')
-          );
-          break;
-        case '0EOTP': return res
-          .status(404)
-          .json(
-            new ApiError(404, 'otp has been expired')
-          )
-      }
+      case '0EOTP': return res
+        .status(404)
+        .json({
+          stasusCode: 404,
+          success: false,
+          message: 'otp has been expired'
+        })
     }
 
     const { fullName, gender, password, age, avatar } = userData;
@@ -621,6 +624,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
 // Api 4 get user details 
 const userDetails = asyncHandler(async (req, res) => {
+  
   const user = req.user;
   if (!user) {
     return res
@@ -640,7 +644,7 @@ const userDetails = asyncHandler(async (req, res) => {
 
   const redisUserData = {
     name: userData.fullName ?? '',
-    age: userData.age?.toString() ?? '',
+    age: userData.age ?? '',
     email: userData.email ?? '',
     gender: userData.gender ?? '',
     avatar: userData.avatar ?? ''

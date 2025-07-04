@@ -4,8 +4,9 @@ import { isTokenBlocked } from "./checkForValidToken.js"
 
 const veifyJWT = async (req , res , next) => {
     try {
-        const accessToken = req.headers["authorization"]?.split("Bearrer ")[1] || req.headers["authorization"]?.split(" ")[0] ;
-        if(!accessToken || accessToken === null || accessToken === undefined){
+        const accessToken = req.headers["authorization"]?.split(" ")[1] ;
+             
+        if(!accessToken){
             return res
             .status(401)
             .json(
@@ -34,7 +35,6 @@ const veifyJWT = async (req , res , next) => {
                 new ApiError(404 , null , "AccessToken has been revoked you must login first")
             )
         }
-        
         req.user = payload ;
         
         next() ;
