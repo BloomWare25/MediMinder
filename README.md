@@ -5,10 +5,11 @@
 | |  | | |___| |_| | || |  | || || |\  | |_| | |___|  _ <  
 |_|  |_|_____|____/___|_|  |_|___|_| \_|____/|_____|_| \_\
 
+# LICENSE 
+
 
 # DataPrrivacy terms :
----
-📢 Data Use Policy
+- 📢 Data Use Policy
 
 MediMinder and all associated user data (including medical history, medication records, and analytics) are the intellectual property of Bloomware.
 
