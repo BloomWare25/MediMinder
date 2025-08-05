@@ -5,3 +5,6 @@ class ApiError {
         this.err = err || null ;
     }
 }
+export {
+    ApiError
+}

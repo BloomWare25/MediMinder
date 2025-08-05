@@ -1,9 +1,4 @@
-// medicine name 
-// dosage : dawn , morning etc 
-// start date 
-// end date 
-// timing food [before || after]
-import mongoose from "mongoose";
+import mongoose from "mongoose"
 
 const medicationSchema = new mongoose.Schema({
     userId: {
