@@ -4,7 +4,15 @@ import { connectDB } from "./db/index.connect.js"
 
 const PORT = process.env.PORT ;
 
-app.listen(PORT , () => {
-    connectDB();
-    console.log(`Server is running on port ${PORT}`);    
-})
+connectDB()
+.then(() => {
+        app.on('error', (err) => {
+            console.error('Server error:', err);
+        })
+        app.listen(PORT, () => {
+            console.log(`Server is running on port ${PORT}`);
+        })
+    })
+    .catch((err) => {
+        console.error('Database connection error:', err);
+    }) ;

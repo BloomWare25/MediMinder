@@ -33,7 +33,7 @@ const medicationSchema = new mongoose.Schema({
         required: true,
     }
 
-})
+}, {timestamps: true})
 
 const Medication = mongoose.model("Medication" , medicationSchema) ;
 

@@ -1,10 +1,8 @@
 import { ApiError } from "../utils/apiError.js"
-import jwt from 'jsonwebtoken'
+import jwt, { decode } from 'jsonwebtoken'
 
 const authUser = (req , res , next) => {
-    const token = req.headers.authorization?.split(" ")[1] ;
-    console.log(req.headers);
-    
+    const token = req.headers.authorization?.split(" ")[1] ;    
     if(!token){
         return res
         .status(401)
@@ -21,6 +19,7 @@ const authUser = (req , res , next) => {
                 new ApiError(401 , "Unauthorized!" , "Invalid token")
             )
         }
+        req.decoded = decoded
         next();
     }catch(err){
         console.log(err);        
