@@ -1,0 +1,42 @@
+import mongoose from "mongoose"
+
+const medicationSchema = new mongoose.Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    },
+    medicineName : {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    dosage: {
+        type: [{
+            type: String,
+            enum: ["dawn" , "morning" , "afternoon" , "evening" , "night"],
+            required: true,
+            lowercase: true,
+        }],
+        required: true,
+    },
+    startDate: {
+        type: Date,
+        required: true,
+    },
+    endDate: {
+        type: Date,
+        required: true,
+    },
+    timing: {
+        type: String,
+        enum: ["before", "after"],
+        required: true,
+    }
+
+}, {timestamps: true})
+
+const Medication = mongoose.model("Medication" , medicationSchema) ;
+
+export {
+    Medication
+}

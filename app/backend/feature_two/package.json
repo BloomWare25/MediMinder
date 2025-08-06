@@ -1,0 +1,28 @@
+{
+  "name": "feature_two",
+  "version": "1.1.0",
+  "description": "storing and fetching user medication data in db",
+  "homepage": "https://github.com/BloomWare25/MediMinder#readme",
+  "bugs": {
+    "url": "https://github.com/BloomWare25/MediMinder/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BloomWare25/MediMinder.git"
+  },
+  "license": "ISC",
+  "author": "Debanjan Das",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.17.0",
+    "multer": "^2.0.2",
+    "nodemon": "^3.1.10"
+  }
+}
