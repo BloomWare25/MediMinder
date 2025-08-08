@@ -368,6 +368,44 @@ const sendUserLogedIn = (recipientEmail, name) => {
     }
   });
 }
+// any failure message 
+const systemFailureMail = (error) => {
+  const loginTime = new Date().toLocaleString();
+  const mailOptions = {
+    from: Mygmail,
+    to: process.env.DEBANJAN_EMAIL,
+    subject: 'System Failure',
+    html: `
+    <!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>System Failure Alert</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f8f8f8; }
+    .container { background: #fff; padding: 24px; border-radius: 8px; max-width: 500px; margin: 40px auto; box-shadow: 0 2px 8px #eee; }
+    .header { color: #d32f2f; font-size: 22px; margin-bottom: 12px; }
+    .error { background: #ffeaea; color: #b71c1c; padding: 12px; border-radius: 4px; margin: 16px 0; font-family: monospace; }
+    .footer { font-size: 12px; color: #888; margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">🚨 System Failure Detected in Mediminder</div>
+    <p>Dear Admin,</p>
+    <p>An error has occurred in your system. Please review the details below:</p>
+    <div class="error">
+      ${error}
+    </div>
+    <p>Please take the necessary actions to resolve this issue.</p>
+    <div class="footer">
+      This is an automated alert from your MediMinder system.
+    </div>
+  </div>
+</body>
+</html>`
+  }
+}
 // Api 1 registering a user 
 const regUser = asyncHandler(async (req, res) => {
   const { email, fullName, gender, age, password } = req.body;
@@ -480,7 +518,7 @@ const ifOtpVerified = asyncHandler(async (req, res) => {
   }
 
   try {
-    const userData = await verifyOtp(email, otp);    
+    const userData = await verifyOtp(email, otp);
     // error handling for the edge error cases
     switch (userData) {
       case 'OU': return res
@@ -568,8 +606,7 @@ const loginUser = asyncHandler(async (req, res) => {
       )
   }
   try {
-    const user = await User.findOne({ email }).select("+_id");
-
+    const user = await User.findOne({ email });
     if (!user) {
       return res
         .status(404)
@@ -589,16 +626,11 @@ const loginUser = asyncHandler(async (req, res) => {
 
 
     const user_id = user._id;
-
     const isUserrevokes = await isTokenBlocked(email);
     if (isUserrevokes) {
       await ExpiredToken.findOneAndDelete({ email });
     }
     const { accesstoken, refreshtoken } = await genAccessRefreshToken(user_id);
-
-    user.refreshToken = refreshtoken;
-    await user.save({ validateBeforeSave: false });
-    await sendUserLogedIn(email, user.fullName);
 
     const redisUserData = {
       age: user.age?.toString() ?? '',
@@ -606,25 +638,40 @@ const loginUser = asyncHandler(async (req, res) => {
       gender: user.gender ?? '',
       avatar: user.avatar ?? '',
       name: user.fullName ?? '',
+      medications: user.medication ?? '',
     };
 
-    await client.hset(`user:${user._id}`, redisUserData);
-    await client.expire(`user:${user._id}`, (process.env.REDIS_DEFAULT_EXPIRY));
+    await client.hset(`user:${user_id}`, redisUserData);
+    await client.expire(`user:${user_id}`, (process.env.REDIS_DEFAULT_EXPIRY));
 
-
+    user.refreshToken = refreshtoken;
+    const savedUser = await user.save({ validateBeforeSave: true });
+    if (!savedUser) {
+      return res
+        .status(500)
+        .json(
+          new ApiError(500, null, "server got stucked somewhere while saving the user credentials")
+        )
+    }
+    await sendUserLogedIn(email, user.fullName);
     return res
       .status(200)
       .json(
         new ApiResponse(200, { user, accesstoken }, "User logged in successfully")
       )
   } catch (error) {
-    throw new ApiError(501, error, "server issue to getting user at log in")
+    await systemFailureMail(error)
+    return res
+    .status(500)
+    .json(
+      new ApiError(501, error, "server issue to getting user at log in")
+    )
   }
 })
 
 // Api 4 get user details 
 const userDetails = asyncHandler(async (req, res) => {
-  
+
   const user = req.user;
   if (!user) {
     return res
