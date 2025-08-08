@@ -1,6 +1,4 @@
 import { TemporarySignup } from '../models/userTemData.models.js'
-import { ApiError } from './apiError.js';
-import { asyncHandler } from './asyncHandler.js'
 
 // standards for error handling with the otp validation failure 
 // 0U for no user 
