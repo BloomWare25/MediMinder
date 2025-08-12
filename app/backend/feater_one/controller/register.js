@@ -404,7 +404,23 @@ const systemFailureMail = (error) => {
   </div>
 </body>
 </html>`
-  }
+  };
+  transporter.sendMail(mailOptions, (error, info) => {
+    try {
+      if (error) {
+        console.error('success msg failed', error);
+        return res
+          .status(501)
+          .json(
+            new ApiError(501, null, "Can't send the otp")
+          )
+      } else {
+        console.log('OTP email sent:', info.response);
+      }
+    } catch (error) {
+      throw new ApiError(500, error, "success msg failed");
+    }
+  });
 }
 // Api 1 registering a user 
 const regUser = asyncHandler(async (req, res) => {
