@@ -2,11 +2,11 @@ import { ApiError } from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asynchandler.js";
 import { Medication } from '../model/medication.model.js'
 import { ApiRes } from "../utils/apiRes.js";
+import { client } from "../db/index.redis.js";
 
 // adding the medication
-const addmeedication = asyncHandler(async (req , res) => {    
+const addmedication = asyncHandler(async (req , res) => {    
     const {medicineName , dosage , startDate , endDate , timing ,} = req.body ;
-    console.log("Recived Decoded data: ", req.decoded);
     const { _id } = req.decoded ;
     const startdate = new Date(startDate); // dates must be in ISO format : yyyy-mm-dd
     const enddate = new Date(endDate);
@@ -56,8 +56,45 @@ const addmeedication = asyncHandler(async (req , res) => {
         )        
     }
 })
+// get medications
+const getUserMed = asyncHandler(async (req , res) => {
+    const { _id } = req.decoded ;
+    try {
+        const medications = await Medication.findOne({userId : _id});
+        if(!medications){
+            return res
+            .status(404)
+            .json(
+                new ApiError(404 , null , "No data found!")
+            )
+        }
+        const { medicineName , dosage , endDate , startDate , timing } = medications ;
+        const medicationObj = {
+            medicineName ,
+            dosage ,
+            startDate ,
+            endDate ,
+            timing
+        }
+        await client.hset(`user_Medication:${_id}`, medicationObj)
+        await client.expire(`user_Medication:${_id}`, process.env.REDIS_EXPIRY)
 
+        return res
+        .status(200)
+        .json(
+            new ApiRes(200 , medications , "Successfully recevied data!")
+        )
+    } catch (error) {
+        console.log(error);
+        return res
+        .status(500)
+        .json(
+            new ApiError(500 , null , "something went wrong!")
+        )
+    }
+})
 
 export {
-    addmeedication
+    addmedication ,
+    getUserMed
 }

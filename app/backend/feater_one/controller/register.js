@@ -642,7 +642,7 @@ const loginUser = asyncHandler(async (req, res) => {
     };
 
     await client.hset(`user:${user_id}`, redisUserData);
-    await client.expire(`user:${user_id}`, (process.env.REDIS_DEFAULT_EXPIRY));
+    await client.expire(`user:${user_id}`, process.env.REDIS_DEFAULT_EXPIRY);
 
     user.refreshToken = refreshtoken;
     const savedUser = await user.save({ validateBeforeSave: true });
@@ -728,8 +728,7 @@ const logoutUser = asyncHandler(async (req, res) => {
   userData.refreshToken = null;
   userData.accesstoken = null;
   await userData.save({ validateBeforeSave: false });
-  const newUser = await User.findById(userData._id);
-
+  
   return res
     .status(200)
     .json(

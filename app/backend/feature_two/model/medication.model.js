@@ -12,7 +12,7 @@ const medicationSchema = new mongoose.Schema({
     },
     dosage: {
         type: [{
-            type: String,
+            type: [String],
             enum: ["dawn" , "morning" , "afternoon" , "evening" , "night"],
             required: true,
             lowercase: true,

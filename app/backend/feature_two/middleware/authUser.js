@@ -20,7 +20,7 @@ const authUser = (req , res , next) => {
             )
         }
         req.decoded = decoded
-        next();
+        return next();
     }catch(err){
         console.log(err);        
         return res

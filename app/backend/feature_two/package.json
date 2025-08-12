@@ -18,6 +18,7 @@
     "start": "nodemon index.js"
   },
   "dependencies": {
+    "@upstash/redis": "^1.35.3",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
