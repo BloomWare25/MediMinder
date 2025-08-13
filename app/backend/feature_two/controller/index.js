@@ -3,7 +3,7 @@ import { asyncHandler } from "../utils/asynchandler.js";
 import { Medication } from '../model/medication.model.js'
 import { ApiRes } from "../utils/apiRes.js";
 import { client } from "../db/index.redis.js";
-
+import mongoose from "mongoose";
 // adding the medication
 const addmedication = asyncHandler(async (req , res) => {    
     const {medicineName , dosage , startDate , endDate , timing ,} = req.body ;
@@ -59,8 +59,16 @@ const addmedication = asyncHandler(async (req , res) => {
 // get medications
 const getUserMed = asyncHandler(async (req , res) => {
     const { _id } = req.decoded ;
+    
     try {
-        const medications = await Medication.findOne({userId : _id});
+        const medications = await Medication.aggregate([
+            {
+                $match: {
+                    userId : new mongoose.Types.ObjectId(_id)
+                }
+            }
+        ])
+        console.log(medications);        
         if(!medications){
             return res
             .status(404)
