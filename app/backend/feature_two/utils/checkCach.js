@@ -6,14 +6,15 @@ import { asyncHandler } from "./asynchandler.js";
 const checkCachedData = asyncHandler(async (req, res, next) => {
     const { _id } = req.decoded;
     try {
-        const cachedData = await client.hgetall(`user_Medication:${_id}`)        
+        const cachedData = await client.get(`user_Medication:${_id}`);
+        console.log(cachedData);                          
         if (cachedData === null) {
             return next() ;
         }
         return res
                 .status(200)
                 .json(
-                    new ApiRes(200, cachedData, "d   ata fecthed from cache")
+                    new ApiRes(200, cachedData, "data fecthed from cache")
                 )
     } catch (error) {
         console.log(error);        

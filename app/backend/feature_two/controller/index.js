@@ -68,7 +68,6 @@ const getUserMed = asyncHandler(async (req , res) => {
                 }
             }
         ])
-        console.log(medications);        
         if(!medications){
             return res
             .status(404)
@@ -76,17 +75,21 @@ const getUserMed = asyncHandler(async (req , res) => {
                 new ApiError(404 , null , "No data found!")
             )
         }
-        const { medicineName , dosage , endDate , startDate , timing } = medications ;
-        const medicationObj = {
-            medicineName ,
-            dosage ,
-            startDate ,
-            endDate ,
-            timing
-        }
-        await client.hset(`user_Medication:${_id}`, medicationObj)
-        await client.expire(`user_Medication:${_id}`, process.env.REDIS_EXPIRY)
-
+        const medArray = [] ;
+        for(let elm of medications){         
+            const { medicineName , dosage , endDate , startDate , timing } = elm;
+            const medicationObj = {
+                medicineName : medicineName,
+                dosage : dosage,
+                startDate : startDate,
+                endDate : endDate,
+                timing : timing
+            }
+            medArray.push(medicationObj)
+        }  
+        
+        await client.set(`user_Medication:${_id}`, medArray)
+        await client.expire(`user_Medication:${_id}`, Number(process.env.REDIS_EXPIRY))
         return res
         .status(200)
         .json(
