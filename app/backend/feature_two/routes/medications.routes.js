@@ -19,6 +19,7 @@ router.route('/getMed')
     checkCachedData,
     getUserMed
 )
+
 export {
     router
 }

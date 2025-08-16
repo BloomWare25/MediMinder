@@ -6,8 +6,7 @@ import { asyncHandler } from "./asynchandler.js";
 const checkCachedData = asyncHandler(async (req, res, next) => {
     const { _id } = req.decoded;
     try {
-        const cachedData = await client.get(`user_Medication:${_id}`);
-        console.log(cachedData);                          
+        const cachedData = await client.get(`user_Medication:${_id}`);                       
         if (cachedData === null) {
             return next() ;
         }

@@ -61,6 +61,31 @@ const getUserMed = asyncHandler(async (req , res) => {
     const { _id } = req.decoded ;
     
     try {
+        const medName = req.query.medName || null ;
+        console.log(medName);        
+        if(medName !== null){
+            console.log("yes we got the query!");  
+            const medications = await Medication.aggregate([
+                {
+                    $group: {
+                        _id: "$medicineName"
+                    }
+                },
+                {
+                    $match: {
+                        userId : new mongoose.Types.ObjectId(_id)
+                    }
+                }
+            ])
+            console.log("Here are the medications",medications);
+            return res
+            .status(200)
+            .json(
+                new ApiRes(200 , medications , "got it")
+            )
+        }
+        console.log("Else part is running");
+        
         const medications = await Medication.aggregate([
             {
                 $match: {
